@@ -80,15 +80,27 @@ document.getElementById("runningCars").innerHTML=html;
 
 async function loadCars(){
 
-const res=await fetch(GAS+"?type=cars");
+const carRes=await fetch(GAS+"?type=cars");
+const cars=await carRes.json();
 
-const cars=await res.json();
+const runRes=await fetch(GAS+"?type=running");
+const running=await runRes.json();
+
+const runningCars=running.map(c=>c.car);
 
 let html="";
 
 cars.forEach(c=>{
 
+if(runningCars.includes(c)){
+
+html+=`<option disabled>${c}（出発中）</option>`;
+
+}else{
+
 html+=`<option>${c}</option>`;
+
+}
 
 });
 
@@ -103,3 +115,4 @@ loadRunningCars();
 loadCars();
 
 };
+
