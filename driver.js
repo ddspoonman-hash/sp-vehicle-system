@@ -2,6 +2,8 @@ const GAS="https://script.google.com/macros/s/AKfycbxkgNmKdoeilTzXtelG_1VZNu8MHP
 
 async function start(){
 
+const driver=localStorage.getItem("driver");
+
 navigator.geolocation.getCurrentPosition(async pos=>{
 
 await fetch(GAS,{
@@ -10,6 +12,7 @@ body:JSON.stringify({
 
 type:"start",
 car:car.value,
+driver:driver,
 startMeter:startMeter.value,
 lat:pos.coords.latitude,
 lng:pos.coords.longitude
@@ -130,5 +133,6 @@ const meter=await res.json();
 document.getElementById("startMeter").value=meter;
 
 }
+
 
 
