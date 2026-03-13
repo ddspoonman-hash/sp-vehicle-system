@@ -76,8 +76,30 @@ document.getElementById("runningCars").innerHTML=html;
 }
 
 
+
+
+async function loadCars(){
+
+const res=await fetch(GAS+"?type=cars");
+
+const cars=await res.json();
+
+let html="";
+
+cars.forEach(c=>{
+
+html+=`<option>${c}</option>`;
+
+});
+
+document.getElementById("car").innerHTML=html;
+
+}
+
+
 window.onload=function(){
 
 loadRunningCars();
+loadCars();
 
 };
