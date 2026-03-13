@@ -19,7 +19,6 @@ const GAS="GASのURL";
 async function loadDrivers(){
 
 const res=await fetch(GAS+"?type=drivers");
-
 const drivers=await res.json();
 
 let html="";
@@ -28,15 +27,13 @@ drivers.forEach(d=>{
 html+=`<option>${d}</option>`;
 });
 
-document.getElementById("driver").innerHTML=html;
+driver.innerHTML=html;
 
 }
 
 function login(){
 
-const driver=document.getElementById("driver").value;
-
-localStorage.setItem("driver",driver);
+localStorage.setItem("driver",driver.value);
 
 location.href="driver_start.html";
 
