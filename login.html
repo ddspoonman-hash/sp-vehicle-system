@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+</head>
+
+<body>
+
+<h2>運転者ログイン</h2>
+
+<select id="driver"></select>
+
+<button onclick="login()">ログイン</button>
+
+<script>
+
+const GAS="GASのURL";
+
+async function loadDrivers(){
+
+const res=await fetch(GAS+"?type=drivers");
+
+const drivers=await res.json();
+
+let html="";
+
+drivers.forEach(d=>{
+html+=`<option>${d}</option>`;
+});
+
+document.getElementById("driver").innerHTML=html;
+
+}
+
+function login(){
+
+const driver=document.getElementById("driver").value;
+
+localStorage.setItem("driver",driver);
+
+location.href="driver_start.html";
+
+}
+
+loadDrivers();
+
+</script>
+
+</body>
+</html>
