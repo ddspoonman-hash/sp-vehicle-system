@@ -116,3 +116,17 @@ loadCars();
 
 };
 
+
+async function loadMeter(){
+
+const car=document.getElementById("car").value;
+
+const res=await fetch(GAS+"?type=meter&car="+encodeURIComponent(car));
+
+const meter=await res.json();
+
+document.getElementById("currentMeter").innerText=meter;
+
+document.getElementById("startMeter").value=meter;
+
+}
