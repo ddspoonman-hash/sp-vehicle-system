@@ -99,3 +99,11 @@ setTimeout(loadMeter,500);
 }
 
 }
+
+function logout(){
+
+localStorage.removeItem("driver");
+
+location.href="login.html";
+
+}
