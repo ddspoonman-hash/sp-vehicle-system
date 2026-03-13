@@ -1,24 +1,33 @@
 <!DOCTYPE html>
 <html>
 <head>
+
 <meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="manifest" href="manifest.json">
+
+<title>送迎管理</title>
+
 </head>
 
 <body>
 
-<h2>SP車両運行管理</h2>
+<h2>送迎管理システム</h2>
 
-<a href="driver_start.html">
-<button>出発</button>
-</a>
-
-<a href="driver_arrival.html">
-<button>到着</button>
+<a href="login.html">
+<button>運転者ログイン</button>
 </a>
 
 <a href="admin.html">
 <button>管理画面</button>
 </a>
+
+<script>
+
+if('serviceWorker' in navigator){
+navigator.serviceWorker.register('sw.js');
+}
+
+</script>
 
 </body>
 </html>
