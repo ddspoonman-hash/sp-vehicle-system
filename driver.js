@@ -1,5 +1,38 @@
 const GAS="https://script.google.com/macros/s/AKfycbxkgNmKdoeilTzXtelG_1VZNu8MHP0wxxkPNLaS-OY4Ix2V08bxJx7CyYMlozKyirLN/exec";
 
+const car=document.getElementById("car");
+const startMeter=document.getElementById("startMeter");
+
+async function loadCars(){
+
+const res=await fetch(GAS+"?type=cars");
+
+const cars=await res.json();
+
+let html="";
+
+cars.forEach(c=>{
+
+html+=`<option>${c}</option>`;
+
+});
+
+car.innerHTML=html;
+
+}
+
+async function loadMeter(){
+
+const res=await fetch(GAS+"?type=meter&car="+car.value);
+
+const meter=await res.json();
+
+document.getElementById("currentMeter").innerText=meter;
+
+startMeter.value=meter;
+
+}
+
 async function start(){
 
 const driver=localStorage.getItem("driver");
@@ -28,111 +61,41 @@ location.href="driver_arrival.html";
 
 async function arrival(){
 
+if(!confirmDrop.checked){
+
+alert("降車確認してください");
+
+return;
+
+}
+
 navigator.geolocation.getCurrentPosition(async pos=>{
-
-let passengers=[...document.querySelectorAll("input[name=pass]:checked")].map(x=>x.value).join(",");
-
-let destination=destOther.value || destinationSelect.value;
-
-let purpose=purposeOther.value || purposeSelect.value;
 
 await fetch(GAS,{
 method:"POST",
 body:JSON.stringify({
 
 type:"arrival",
-destination,
-purpose,
-passengers,
 endMeter:endMeter.value,
-memo:memo.value,
 lat:pos.coords.latitude,
 lng:pos.coords.longitude
 
 })
 });
 
+alert("登録完了");
+
 location.href="driver_start.html";
 
 });
 
-
 }
-
-
-async function loadRunningCars(){
-
-const res=await fetch(GAS+"?type=running");
-
-const cars=await res.json();
-
-let html="";
-
-cars.forEach(c=>{
-
-html+=`${c.car}（${c.driver}）<br>`;
-
-});
-
-document.getElementById("runningCars").innerHTML=html;
-
-}
-
-
-
-
-async function loadCars(){
-
-const carRes=await fetch(GAS+"?type=cars");
-const cars=await carRes.json();
-
-const runRes=await fetch(GAS+"?type=running");
-const running=await runRes.json();
-
-const runningCars=running.map(c=>c.car);
-
-let html="";
-
-cars.forEach(c=>{
-
-if(runningCars.includes(c)){
-
-html+=`<option disabled>${c}（出発中）</option>`;
-
-}else{
-
-html+=`<option>${c}</option>`;
-
-}
-
-});
-
-document.getElementById("car").innerHTML=html;
-
-}
-
 
 window.onload=function(){
 
-loadRunningCars();
+if(car){
 loadCars();
-
 setTimeout(loadMeter,500);
-
-};
-
-
-async function loadMeter(){
-
-const car=document.getElementById("car").value;
-
-const res=await fetch(GAS+"?type=meter&car="+encodeURIComponent(car));
-
-const meter=await res.json();
-
-document.getElementById("startMeter").value=meter;
-
 }
 
-
-
+}
