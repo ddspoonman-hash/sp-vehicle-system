@@ -114,6 +114,8 @@ window.onload=function(){
 loadRunningCars();
 loadCars();
 
+setTimeout(loadMeter,500);
+
 };
 
 
@@ -130,3 +132,4 @@ document.getElementById("currentMeter").innerText=meter;
 document.getElementById("startMeter").value=meter;
 
 }
+
