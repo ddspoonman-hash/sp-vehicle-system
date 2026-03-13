@@ -131,5 +131,4 @@ document.getElementById("startMeter").value=meter;
 
 }
 
-<select id="car" onchange="loadMeter()"></select>
 
