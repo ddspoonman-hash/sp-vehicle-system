@@ -53,4 +53,31 @@ location.href="driver_start.html";
 
 });
 
+
 }
+
+
+async function loadRunningCars(){
+
+const res=await fetch(GAS+"?type=running");
+
+const cars=await res.json();
+
+let html="";
+
+cars.forEach(c=>{
+
+html+=`${c.car}（${c.driver}）<br>`;
+
+});
+
+document.getElementById("runningCars").innerHTML=html;
+
+}
+
+
+window.onload=function(){
+
+loadRunningCars();
+
+};
