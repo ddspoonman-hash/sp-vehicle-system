@@ -127,9 +127,9 @@ const res=await fetch(GAS+"?type=meter&car="+encodeURIComponent(car));
 
 const meter=await res.json();
 
-document.getElementById("currentMeter").innerText=meter;
-
 document.getElementById("startMeter").value=meter;
 
 }
+
+<select id="car" onchange="loadMeter()"></select>
 
