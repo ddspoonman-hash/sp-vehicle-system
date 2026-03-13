@@ -1,24 +1,33 @@
 <!DOCTYPE html>
 <html>
 <head>
+
 <meta name="viewport" content="width=device-width,initial-scale=1">
+
+<title>運転者ログイン</title>
+
 </head>
 
 <body>
 
 <h2>運転者ログイン</h2>
 
+<div id="driverArea" style="display:none">
+
 <select id="driver"></select>
+
+</div>
 
 <button onclick="login()">ログイン</button>
 
 <script>
 
-const GAS="https://script.google.com/macros/s/AKfycbxkgNmKdoeilTzXtelG_1VZNu8MHP0wxxkPNLaS-OY4Ix2V08bxJx7CyYMlozKyirLN/exec";
+const GAS="GASのURL";
 
 async function loadDrivers(){
 
 const res=await fetch(GAS+"?type=drivers");
+
 const drivers=await res.json();
 
 let html="";
@@ -28,6 +37,8 @@ html+=`<option>${d}</option>`;
 });
 
 driver.innerHTML=html;
+
+document.getElementById("driverArea").style.display="block";
 
 }
 
