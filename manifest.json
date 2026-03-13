@@ -1,0 +1,8 @@
+{
+"name":"送迎管理",
+"short_name":"送迎",
+"start_url":"index.html",
+"display":"standalone",
+"background_color":"#ffffff",
+"theme_color":"#2c7be5"
+}
