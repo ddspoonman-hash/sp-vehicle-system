@@ -2,46 +2,37 @@ const GAS="https://script.google.com/macros/s/AKfycbxkgNmKdoeilTzXtelG_1VZNu8MHP
 
 let map;
 
-let markers={};
+async function initMap(){
 
-map=new google.maps.Map(
-document.getElementById("map"),
-{zoom:13,center:{lat:35,lng:137}}
-);
+map=new google.maps.Map(document.getElementById("map"),{
 
-async function load(){
+center:{lat:35,lng:135},
+zoom:12
+
+});
+
+loadCars();
+
+}
+
+async function loadCars(){
 
 const res=await fetch(GAS+"?type=running");
 
 const cars=await res.json();
 
-running.innerHTML="";
-
 cars.forEach(c=>{
 
-running.innerHTML+=c.car+" "+c.driver+"<br>";
+new google.maps.Marker({
 
-const pos={lat:c.lat,lng:c.lng};
-
-if(markers[c.car]){
-
-markers[c.car].setPosition(pos);
-
-}else{
-
-markers[c.car]=new google.maps.Marker({
-position:pos,
+position:{lat:c.lat,lng:c.lng},
 map:map,
-label:c.car
+title:c.car+" "+c.driver
+
+});
+
 });
 
 }
 
-});
-
-}
-
-load();
-
-
-setInterval(load,60000);
+window.onload=initMap;
