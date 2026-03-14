@@ -1,4 +1,4 @@
-const GAS="PUT_YOUR_GAS_URL_HERE";
+const GAS="https://script.google.com/macros/s/AKfycbxkgNmKdoeilTzXtelG_1VZNu8MHP0wxxkPNLaS-OY4Ix2V08bxJx7CyYMlozKyirLN/exec";
 
 const car=document.getElementById("car");
 const startMeter=document.getElementById("startMeter");
