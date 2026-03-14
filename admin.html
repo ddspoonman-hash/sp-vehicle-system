@@ -1,18 +1,29 @@
 <!DOCTYPE html>
 <html>
 <head>
-
 <meta name="viewport" content="width=device-width,initial-scale=1">
-
-<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBnt8NoM9nwYgj6_xgWbks114zUM6csGKg"></script>
-
+<title>管理画面</title>
+<script src="https://maps.googleapis.com/maps/api/js?key=PUT_YOUR_MAPS_API_KEY"></script>
 </head>
 
 <body>
 
 <h2>管理画面</h2>
 
-<div id="map" style="height:500px"></div>
+<button onclick="logout()">ログアウト</button>
+
+<h3>走行中車両</h3>
+<div id="map" style="height:400px"></div>
+
+<h3>車両管理</h3>
+<input id="newCar">
+<button onclick="addCar()">追加</button>
+<div id="carList"></div>
+
+<h3>運転者管理</h3>
+<input id="newDriver">
+<button onclick="addDriver()">追加</button>
+<div id="driverList"></div>
 
 <script src="admin.js"></script>
 

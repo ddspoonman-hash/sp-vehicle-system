@@ -1,4 +1,4 @@
-const GAS="https://script.google.com/macros/s/AKfycbxkgNmKdoeilTzXtelG_1VZNu8MHP0wxxkPNLaS-OY4Ix2V08bxJx7CyYMlozKyirLN/exec";
+const GAS="PUT_YOUR_GAS_URL_HERE";
 
 const car=document.getElementById("car");
 const startMeter=document.getElementById("startMeter");
@@ -6,18 +6,17 @@ const startMeter=document.getElementById("startMeter");
 async function loadCars(){
 
 const res=await fetch(GAS+"?type=cars");
-
 const cars=await res.json();
 
 let html="";
 
 cars.forEach(c=>{
-
 html+=`<option>${c}</option>`;
-
 });
 
 car.innerHTML=html;
+
+document.getElementById("carArea").style.display="block";
 
 }
 
@@ -31,6 +30,10 @@ document.getElementById("currentMeter").innerText=meter;
 
 startMeter.value=meter;
 
+}
+
+function editMeter(){
+startMeter.style.display="block";
 }
 
 async function start(){
@@ -62,11 +65,8 @@ location.href="driver_arrival.html";
 async function arrival(){
 
 if(!confirmDrop.checked){
-
 alert("降車確認してください");
-
 return;
-
 }
 
 navigator.geolocation.getCurrentPosition(async pos=>{
@@ -91,19 +91,16 @@ location.href="driver_start.html";
 
 }
 
+function logout(){
+localStorage.removeItem("driver");
+location.href="login.html";
+}
+
 window.onload=function(){
 
 if(car){
 loadCars();
 setTimeout(loadMeter,500);
 }
-
-}
-
-function logout(){
-
-localStorage.removeItem("driver");
-
-location.href="login.html";
 
 }

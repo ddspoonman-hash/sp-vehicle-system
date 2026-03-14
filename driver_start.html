@@ -1,34 +1,33 @@
 <!DOCTYPE html>
 <html>
 <head>
-
 <meta name="viewport" content="width=device-width,initial-scale=1">
-
+<title>出発</title>
 </head>
 
 <body>
 
 <script>
-
 if(!localStorage.getItem("driver")){
 location.href="login.html";
 }
-
 </script>
 
-<h2>出発</h2>
+<h2>出発登録</h2>
 
+<button onclick="logout()">ログアウト</button>
+
+<div id="carArea" style="display:none">
 車両
-
 <select id="car" onchange="loadMeter()"></select>
+</div>
 
 現在メーター
-
 <div id="currentMeter">-</div>
 
-出発メーター
+<button onclick="editMeter()">メーター補正</button>
 
-<input id="startMeter" type="number">
+<input id="startMeter" type="number" style="display:none">
 
 <button onclick="start()">出発</button>
 
