@@ -39,7 +39,7 @@ document.getElementById("driverArea").style.display="block";
 
 async function login(){
 
-const res = await fetch(GAS+"?type=drivers");
+const res = await fetch(GAS + "?type=drivers");
 
 const drivers = await res.json();
 
@@ -48,7 +48,12 @@ const passcode = pass.value;
 
 const user = drivers.find(d => d.name === selected);
 
-if(!user || user.pass !== passcode){
+if(!user){
+alert("ユーザーが見つかりません");
+return;
+}
+
+if(String(user.pass) !== passcode){
 
 alert("パスコードが違います");
 return;
@@ -60,7 +65,6 @@ localStorage.setItem("driver", selected);
 location.href="driver_start.html";
 
 }
-
 loadDrivers();
 
 </script>
