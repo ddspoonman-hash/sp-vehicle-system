@@ -12,6 +12,8 @@
 <select id="driver"></select>
 </div>
 
+<input id="pass" type="password" placeholder="パスコード">
+
 <button onclick="login()">ログイン</button>
 
 <script>
@@ -26,7 +28,7 @@ const drivers=await res.json();
 let html="";
 
 drivers.forEach(d=>{
-html+=`<option>${d}</option>`;
+html+=`<option value="${d.name}">${d.name}</option>`;
 });
 
 driver.innerHTML=html;
@@ -35,9 +37,25 @@ document.getElementById("driverArea").style.display="block";
 
 }
 
-function login(){
+async function login(){
 
-localStorage.setItem("driver",driver.value);
+const res = await fetch(GAS+"?type=drivers");
+
+const drivers = await res.json();
+
+const selected = driver.value;
+const passcode = pass.value;
+
+const user = drivers.find(d => d.name === selected);
+
+if(!user || user.pass !== passcode){
+
+alert("パスコードが違います");
+return;
+
+}
+
+localStorage.setItem("driver", selected);
 
 location.href="driver_start.html";
 
