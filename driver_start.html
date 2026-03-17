@@ -2,20 +2,17 @@
 
 <div id="user"></div>
 
-<h3>走行中車両</h3>
-<div id="runningCars"></div>
+<h3>現在使用中</h3>
+<div id="running"></div>
+
+<h3>予約状況（本日）</h3>
+<div id="reservations"></div>
 
 車両
 <select id="car"></select>
 
-出発メーター
-<input id="startMeter" type="number">
-
-補正
-<input id="adjust" type="number" value="0">
-
-<h3>同乗者</h3>
-<div id="members"></div>
+メーター（自動）
+<input id="meter" disabled>
 
 <button onclick="start()">出発</button>
 
