@@ -1,73 +1,32 @@
-<!DOCTYPE html>
-<html>
-<head>
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>運転者ログイン</title>
-</head>
-<body>
-
-<h2>運転者ログイン</h2>
-
-<div id="driverArea" style="display:none">
-<select id="driver"></select>
-</div>
-
-<input id="pass" type="password" placeholder="パスコード">
-
-<button onclick="login()">ログイン</button>
-
-<script>
-
 const GAS="https://script.google.com/macros/s/AKfycbxkgNmKdoeilTzXtelG_1VZNu8MHP0wxxkPNLaS-OY4Ix2V08bxJx7CyYMlozKyirLN/exec";
-
-async function loadDrivers(){
-
-const res=await fetch(GAS+"?type=drivers");
-const drivers=await res.json();
-
-let html="";
-
-drivers.forEach(d=>{
-html+=`<option value="${d.name}">${d.name}</option>`;
-});
-
-driver.innerHTML=html;
-
-document.getElementById("driverArea").style.display="block";
-
-}
 
 async function login(){
 
-const res = await fetch(GAS + "?type=drivers");
+const res=await fetch(GAS+"?type=drivers");
 
-const drivers = await res.json();
+const drivers=await res.json();
 
-const selected = driver.value;
-const passcode = pass.value;
+const id=loginId.value;
+const pw=pass.value;
 
-const user = drivers.find(d => d.name === selected);
+const user=drivers.find(d=>d.id===id);
 
 if(!user){
-alert("ユーザーが見つかりません");
-return;
-}
 
-if(String(user.pass) !== passcode){
-
-alert("パスコードが違います");
+alert("IDが違います");
 return;
 
 }
 
-localStorage.setItem("driver", selected);
+if(user.pass!==pw){
+
+alert("パスワードが違います");
+return;
+
+}
+
+localStorage.setItem("driver",user.name);
 
 location.href="driver_start.html";
 
 }
-loadDrivers();
-
-</script>
-
-</body>
-</html>
