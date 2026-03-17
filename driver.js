@@ -1,37 +1,67 @@
 const GAS="https://script.google.com/macros/s/AKfycbxkgNmKdoeilTzXtelG_1VZNu8MHP0wxxkPNLaS-OY4Ix2V08bxJx7CyYMlozKyirLN/exec";
 
-async function load(){
+const car=document.getElementById("car");
+const startMeter=document.getElementById("startMeter");
+
+window.onload=async()=>{
+
+// ユーザー表示
+const user=JSON.parse(localStorage.getItem("user"));
+document.getElementById("user").innerText=user.name;
 
 // 車両
-let cars=await (await fetch(GAS+"?type=cars")).json();
-car.innerHTML=cars.map(c=>`<option>${c}</option>`).join("");
+const cars=await fetch(GAS+"?type=cars").then(r=>r.json());
+cars.forEach(c=>{
+const opt=document.createElement("option");
+opt.value=c;
+opt.textContent=c;
+car.appendChild(opt);
+});
 
-// メーター
-let m=await (await fetch(GAS+"?type=meter&car="+car.value)).json();
-meter.innerText=m;
+// メーター自動取得
+car.onchange=async()=>{
+const m=await fetch(GAS+`?type=meter&car=${car.value}`).then(r=>r.json());
+startMeter.value=m;
+};
 
-// 予約
-let resv=await (await fetch(GAS+"?type=reservations")).json();
+// 初期
+car.dispatchEvent(new Event("change"));
 
-res.innerText=resv
-.filter(r=>r.car===car.value)
-.map(r=>r.start+"-"+r.end+" "+r.user)
-.join("\\n");
+// 走行中表示
+loadRunning();
+
+};
+
+async function loadRunning(){
+
+const list=await fetch(GAS+"?type=running").then(r=>r.json());
+
+const div=document.getElementById("runningCars");
+div.innerHTML="";
+
+list.forEach(r=>{
+div.innerHTML+=`${r.car}（${r.driver}）<br>`;
+});
 
 }
 
 async function start(){
 
-navigator.geolocation.getCurrentPosition(async p=>{
+const user=JSON.parse(localStorage.getItem("user"));
+
+const adjust=document.getElementById("adjust").value;
+
+navigator.geolocation.getCurrentPosition(async pos=>{
 
 await fetch(GAS,{
 method:"POST",
 body:JSON.stringify({
 type:"start",
 car:car.value,
-driver:localStorage.getItem("driver"),
-lat:p.coords.latitude,
-lng:p.coords.longitude
+driver:user.name,
+startMeter:Number(startMeter.value)+Number(adjust),
+lat:pos.coords.latitude,
+lng:pos.coords.longitude
 })
 });
 
@@ -40,26 +70,3 @@ location.href="driver_arrival.html";
 });
 
 }
-
-async function arrival(){
-
-navigator.geolocation.getCurrentPosition(async p=>{
-
-await fetch(GAS,{
-method:"POST",
-body:JSON.stringify({
-type:"arrival",
-driver:localStorage.getItem("driver"),
-endMeter:endMeter.value,
-lat:p.coords.latitude,
-lng:p.coords.longitude
-})
-});
-
-location.href="driver_start.html";
-
-});
-
-}
-
-if(document.getElementById("car")) load();
