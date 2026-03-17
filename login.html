@@ -2,30 +2,22 @@ const GAS="https://script.google.com/macros/s/AKfycbxkgNmKdoeilTzXtelG_1VZNu8MHP
 
 async function login(){
 
-const res=await fetch(GAS+"?type=drivers");
+const r=await fetch(GAS+"?type=drivers");
+const d=await r.json();
 
-const drivers=await res.json();
+const u=d.find(x=>x.id===loginId.value);
 
-const id=loginId.value;
-const pw=pass.value;
-
-const user=drivers.find(d=>d.id===id);
-
-if(!user){
-
-alert("IDが違います");
+if(!u){
+alert("ID違い");
 return;
-
 }
 
-if(user.pass!==pw){
-
-alert("パスワードが違います");
+if(u.pass!==pass.value){
+alert("PASS違い");
 return;
-
 }
 
-localStorage.setItem("driver",user.name);
+localStorage.setItem("driver",u.name);
 
 location.href="driver_start.html";
 
