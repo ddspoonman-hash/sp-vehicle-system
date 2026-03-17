@@ -1,23 +1,33 @@
 const GAS="https://script.google.com/macros/s/AKfycbxkgNmKdoeilTzXtelG_1VZNu8MHP0wxxkPNLaS-OY4Ix2V08bxJx7CyYMlozKyirLN/exec";
 
+const driverSelect=document.getElementById("driver");
+
+window.onload=async()=>{
+
+const list=await fetch(GAS+"?type=drivers").then(r=>r.json());
+
+driverSelect.innerHTML="";
+
+list.forEach(d=>{
+const opt=document.createElement("option");
+opt.value=JSON.stringify(d);
+opt.textContent=`${d.dept} ${d.name}`;
+driverSelect.appendChild(opt);
+});
+
+};
+
 async function login(){
 
-const r=await fetch(GAS+"?type=drivers");
-const d=await r.json();
+const user=JSON.parse(driverSelect.value);
+const pass=document.getElementById("pass").value;
 
-const u=d.find(x=>x.id===loginId.value);
-
-if(!u){
-alert("ID違い");
+if(pass!=user.pass){
+alert("パスワードが違います");
 return;
 }
 
-if(u.pass!==pass.value){
-alert("PASS違い");
-return;
-}
-
-localStorage.setItem("driver",u.name);
+localStorage.setItem("user",JSON.stringify(user));
 
 location.href="driver_start.html";
 
