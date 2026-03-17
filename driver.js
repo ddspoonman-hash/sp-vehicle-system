@@ -8,15 +8,8 @@ window.onload=async()=>{
 const user=JSON.parse(localStorage.getItem("user"));
 document.getElementById("user").innerText=`ログイン：${user.name}`;
 
-// 車両一覧
-const cars=await fetch(GAS+"?type=cars").then(r=>r.json());
-
-cars.forEach(c=>{
-const opt=document.createElement("option");
-opt.value=c;
-opt.textContent=c;
-car.appendChild(opt);
-});
+// ★ここ差し替え
+await loadCarsWithLock();
 
 // メーター
 car.onchange=async()=>{
@@ -24,9 +17,12 @@ const m=await fetch(GAS+`?type=meter&car=${car.value}`).then(r=>r.json());
 meter.value=m;
 };
 
+// 初期選択
+if(car.options.length>0){
+car.selectedIndex=0;
 car.dispatchEvent(new Event("change"));
+}
 
-// ★ここ追加が重要
 loadRunning();
 loadReservations();
 
