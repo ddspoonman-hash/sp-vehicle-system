@@ -1,12 +1,21 @@
 <h2>出発</h2>
 
+<div id="user"></div>
+
+<h3>使用中車両</h3>
+<div id="runningCars"></div>
+
+車両
 <select id="car"></select>
 
-<div id="res"></div>
+出発メーター（自動取得＋補正）
+<input id="startMeter" type="number">
 
-<div>
-メーター: <span id="meter"></span>
-</div>
+補正
+<input id="adjust" type="number" value="0">
+
+<h3>同乗者</h3>
+<div id="members"></div>
 
 <button onclick="start()">出発</button>
 
