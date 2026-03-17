@@ -69,3 +69,25 @@ location.href="driver_arrival.html";
 });
 
 }
+
+async function arrival(){
+
+const endMeter=document.getElementById("endMeter").value;
+
+navigator.geolocation.getCurrentPosition(async pos=>{
+
+await fetch(GAS,{
+method:"POST",
+body:JSON.stringify({
+type:"arrival",
+endMeter:endMeter,
+lat:pos.coords.latitude,
+lng:pos.coords.longitude
+})
+});
+
+location.href="driver_start.html";
+
+});
+
+}
