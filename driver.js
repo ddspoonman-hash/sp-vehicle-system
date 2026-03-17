@@ -76,6 +76,11 @@ div.innerHTML+=`${r.start}-${r.end} ${r.car}（${r.user}）<br>`;
 // ■ 出発
 async function start(){
 
+if(car.selectedOptions[0].disabled){
+alert("この車両は使用できません");
+return;
+}
+
 const user=JSON.parse(localStorage.getItem("user"));
 
 navigator.geolocation.getCurrentPosition(async pos=>{
