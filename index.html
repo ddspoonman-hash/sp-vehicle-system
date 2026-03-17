@@ -1,19 +1,22 @@
 <!DOCTYPE html>
 <html>
 <head>
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<link rel="manifest" href="manifest.json">
-<title>送迎管理</title>
+<meta charset="UTF-8">
+<title>送迎ログイン</title>
+<link rel="stylesheet" href="style.css">
 </head>
-<body>
-<h2>送迎管理システム</h2>
-<a href="login.html"><button>運転者ログイン</button></a>
-<a href="admin.html"><button>管理画面</button></a>
 
-<script>
-if('serviceWorker' in navigator){
-navigator.serviceWorker.register('sw.js');
-}
-</script>
+<body>
+
+<h2>送迎ログイン</h2>
+
+<input id="loginId" placeholder="ID">
+
+<input id="pass" type="password" placeholder="パスワード">
+
+<button onclick="login()">ログイン</button>
+
+<script src="login.js"></script>
+
 </body>
 </html>
