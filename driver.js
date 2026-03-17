@@ -101,3 +101,54 @@ location.href="driver_arrival.html";
 });
 
 }
+
+async function loadCarsWithLock(){
+
+const user=JSON.parse(localStorage.getItem("user"));
+
+const cars=await fetch(GAS+"?type=cars").then(r=>r.json());
+const running=await fetch(GAS+"?type=running").then(r=>r.json());
+const reservations=await fetch(GAS+"?type=reservations").then(r=>r.json());
+
+const today=new Date().toISOString().slice(0,10);
+
+car.innerHTML="";
+
+cars.forEach(c=>{
+
+let disabled=false;
+let label=c;
+
+// ■ 使用中チェック
+const isRunning=running.find(r=>r.car===c);
+
+if(isRunning){
+disabled=true;
+label+="（使用中）";
+}
+
+// ■ 予約チェック（今日）
+const rsv=reservations.find(r=>r.car===c && r.date===today);
+
+if(rsv){
+
+if(rsv.user!==user.name){
+disabled=true;
+label+=`（予約:${rsv.user}）`;
+}else{
+label+="（自分予約）";
+}
+
+}
+
+// option生成
+const opt=document.createElement("option");
+opt.value=c;
+opt.textContent=label;
+opt.disabled=disabled;
+
+car.appendChild(opt);
+
+});
+
+}
