@@ -11,7 +11,7 @@ async function login(){
 const id=document.getElementById("id").value;
 const pass=document.getElementById("pass").value;
 
-const user=drivers.find(d=>d.name===id);
+const user=drivers.find(d=>d.id===id);
 
 if(!user){
 alert("IDが存在しません");
@@ -19,7 +19,7 @@ return;
 }
 
 if(user.pass!=pass){
-alert("パスワードが違います");
+alert("パスワード違い");
 return;
 }
 
