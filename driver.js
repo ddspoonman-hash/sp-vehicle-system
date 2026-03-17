@@ -1,58 +1,37 @@
 const GAS="https://script.google.com/macros/s/AKfycbxkgNmKdoeilTzXtelG_1VZNu8MHP0wxxkPNLaS-OY4Ix2V08bxJx7CyYMlozKyirLN/exec";
 
-const car=document.getElementById("car");
-const startMeter=document.getElementById("startMeter");
+async function load(){
 
-async function loadCars(){
+// 車両
+let cars=await (await fetch(GAS+"?type=cars")).json();
+car.innerHTML=cars.map(c=>`<option>${c}</option>`).join("");
 
-const res=await fetch(GAS+"?type=cars");
-const cars=await res.json();
+// メーター
+let m=await (await fetch(GAS+"?type=meter&car="+car.value)).json();
+meter.innerText=m;
 
-let html="";
+// 予約
+let resv=await (await fetch(GAS+"?type=reservations")).json();
 
-cars.forEach(c=>{
-html+=`<option>${c}</option>`;
-});
+res.innerText=resv
+.filter(r=>r.car===car.value)
+.map(r=>r.start+"-"+r.end+" "+r.user)
+.join("\\n");
 
-car.innerHTML=html;
-
-document.getElementById("carArea").style.display="block";
-
-}
-
-async function loadMeter(){
-
-const res=await fetch(GAS+"?type=meter&car="+car.value);
-
-const meter=await res.json();
-
-document.getElementById("currentMeter").innerText=meter;
-
-startMeter.value=meter;
-
-}
-
-function editMeter(){
-startMeter.style.display="block";
 }
 
 async function start(){
 
-const driver=localStorage.getItem("driver");
-
-navigator.geolocation.getCurrentPosition(async pos=>{
+navigator.geolocation.getCurrentPosition(async p=>{
 
 await fetch(GAS,{
 method:"POST",
 body:JSON.stringify({
-
 type:"start",
 car:car.value,
-driver:driver,
-startMeter:startMeter.value,
-lat:pos.coords.latitude,
-lng:pos.coords.longitude
-
+driver:localStorage.getItem("driver"),
+lat:p.coords.latitude,
+lng:p.coords.longitude
 })
 });
 
@@ -64,26 +43,18 @@ location.href="driver_arrival.html";
 
 async function arrival(){
 
-if(!confirmDrop.checked){
-alert("降車確認してください");
-return;
-}
-
-navigator.geolocation.getCurrentPosition(async pos=>{
+navigator.geolocation.getCurrentPosition(async p=>{
 
 await fetch(GAS,{
 method:"POST",
 body:JSON.stringify({
-
 type:"arrival",
+driver:localStorage.getItem("driver"),
 endMeter:endMeter.value,
-lat:pos.coords.latitude,
-lng:pos.coords.longitude
-
+lat:p.coords.latitude,
+lng:p.coords.longitude
 })
 });
-
-alert("登録完了");
 
 location.href="driver_start.html";
 
@@ -91,16 +62,4 @@ location.href="driver_start.html";
 
 }
 
-function logout(){
-localStorage.removeItem("driver");
-location.href="login.html";
-}
-
-window.onload=function(){
-
-if(car){
-loadCars();
-setTimeout(loadMeter,500);
-}
-
-}
+if(document.getElementById("car")) load();
