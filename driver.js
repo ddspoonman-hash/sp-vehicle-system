@@ -5,12 +5,13 @@ const startMeter=document.getElementById("startMeter");
 
 window.onload=async()=>{
 
-// ユーザー表示
 const user=JSON.parse(localStorage.getItem("user"));
 document.getElementById("user").innerText=user.name;
 
 // 車両
 const cars=await fetch(GAS+"?type=cars").then(r=>r.json());
+
+car.innerHTML="";
 cars.forEach(c=>{
 const opt=document.createElement("option");
 opt.value=c;
@@ -18,16 +19,15 @@ opt.textContent=c;
 car.appendChild(opt);
 });
 
-// メーター自動取得
+// メーター
 car.onchange=async()=>{
 const m=await fetch(GAS+`?type=meter&car=${car.value}`).then(r=>r.json());
 startMeter.value=m;
 };
 
-// 初期
 car.dispatchEvent(new Event("change"));
 
-// 走行中表示
+// 走行中
 loadRunning();
 
 };
@@ -48,7 +48,6 @@ div.innerHTML+=`${r.car}（${r.driver}）<br>`;
 async function start(){
 
 const user=JSON.parse(localStorage.getItem("user"));
-
 const adjust=document.getElementById("adjust").value;
 
 navigator.geolocation.getCurrentPosition(async pos=>{
