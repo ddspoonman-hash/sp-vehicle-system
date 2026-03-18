@@ -98,7 +98,8 @@ return;
 const user=JSON.parse(localStorage.getItem("user"));
 
 navigator.geolocation.getCurrentPosition(async pos=>{
-
+// ★追加（fetchの前）
+localStorage.setItem("lastCar",car.value);
 await fetch(GAS,{
 method:"POST",
 body:JSON.stringify({
