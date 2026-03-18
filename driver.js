@@ -1,108 +1,87 @@
 const GAS="https://script.google.com/macros/s/AKfycbxkgNmKdoeilTzXtelG_1VZNu8MHP0wxxkPNLaS-OY4Ix2V08bxJx7CyYMlozKyirLN/exec";
 
-// 要素取得（全部ここで定義）
-const car = document.getElementById("car");
-const meter = document.getElementById("meter");
-const running = document.getElementById("running");
-const endMeter = document.getElementById("endMeter");
+let init;
+let allDrivers=[];
+let selectedPassengers=new Set();
 
-window.onload = async () => {
+window.onload = async ()=>{
 
 const user = JSON.parse(localStorage.getItem("user"));
-if(!user){
-location.href="index.html";
-return;
+if(!user){location.href="index.html";return;}
+
+if(document.getElementById("user")){
+document.getElementById("user").innerText=user.name;
 }
 
-// 名前表示
-const userDiv = document.getElementById("user");
-if(userDiv){
-userDiv.innerText = user.name;
-}
-
-// -----------------------------
-// ★ init取得（キャッシュ対応）
-// -----------------------------
-let init = JSON.parse(localStorage.getItem("init"));
-
+// 初期データ取得（高速化）
+init = JSON.parse(localStorage.getItem("init"));
 if(!init){
 init = await fetch(GAS+"?type=init").then(r=>r.json());
 localStorage.setItem("init",JSON.stringify(init));
 }
 
-// -----------------------------
-// ★ 出発画面処理
-// -----------------------------
-if(car){
+// 出発画面
+if(document.getElementById("car")){
+setupStart();
+}
 
-// 車両セット
-car.innerHTML = "";
+// 到着画面
+if(document.getElementById("endMeter")){
+setupArrival();
+}
 
-init.cars.forEach(c=>{
-const opt = document.createElement("option");
-opt.value = c;
-opt.textContent = c;
-car.appendChild(opt);
-});
-
-// メーター取得
-car.onchange = async ()=>{
-const m = await fetch(GAS+`?type=meter&car=${car.value}`).then(r=>r.json());
-meter.value = m;
 };
 
+// ---------------- 出発 ----------------
+
+function setupStart(){
+
+const car = document.getElementById("car");
+const meter = document.getElementById("meter");
+const running = document.getElementById("running");
+
+// 車両
+car.innerHTML="";
+init.cars.forEach(c=>{
+const o=document.createElement("option");
+o.value=c;o.textContent=c;
+car.appendChild(o);
+});
+
+// メーター
+car.onchange=async ()=>{
+const m=await fetch(GAS+`?type=meter&car=${car.value}`).then(r=>r.json());
+meter.value=m;
+};
 car.dispatchEvent(new Event("change"));
 
-// 使用中表示
-if(running){
-running.innerHTML = "";
-
+// 使用中
+running.innerHTML="";
 init.running.forEach(r=>{
-running.innerHTML += `${r.car}（${r.driver}）<br>`;
+running.innerHTML+=`${r.car}（${r.driver}）<br>`;
 });
-}
 
 }
 
-// -----------------------------
-// ★ 到着画面処理
-// -----------------------------
-if(endMeter){
-
-const c = localStorage.getItem("lastCar");
-
-if(c){
-const m = await fetch(GAS+`?type=meter&car=${c}`).then(r=>r.json());
-endMeter.value = m;
-}
-
-}
-
-loadPassengers(init);
-  
-};
-
-// -----------------------------
-// ★ 出発
-// -----------------------------
 function start(){
 
 const user = JSON.parse(localStorage.getItem("user"));
-localStorage.setItem("lastCar",car.value);
+const car = document.getElementById("car").value;
+const meter = document.getElementById("meter").value;
 
-// キャッシュ削除（重要）
+localStorage.setItem("lastCar",car);
 localStorage.removeItem("init");
 
-navigator.geolocation.getCurrentPosition(async pos=>{
+navigator.geolocation.getCurrentPosition(pos=>{
 
-await fetch(GAS,{
+fetch(GAS,{
 method:"POST",
 body:JSON.stringify({
 type:"start",
-car:car.value,
+car:car,
 driver:user.name,
 dept:user.dept,
-startMeter:meter.value,
+startMeter:meter,
 lat:pos.coords.latitude,
 lng:pos.coords.longitude
 })
@@ -110,64 +89,109 @@ lng:pos.coords.longitude
 
 location.href="driver_arrival.html";
 
+},()=>{
+// GPS失敗でも進む
+fetch(GAS,{
+method:"POST",
+body:JSON.stringify({
+type:"start",
+car:car,
+driver:user.name,
+dept:user.dept,
+startMeter:meter,
+lat:0,lng:0
+})
+});
+location.href="driver_arrival.html";
 });
 
 }
 
-// -----------------------------
-// ★ 到着
-// -----------------------------
+// ---------------- 到着 ----------------
+
+function setupArrival(){
+
+const endMeter = document.getElementById("endMeter");
+
+// メーター取得
+const car = localStorage.getItem("lastCar");
+fetch(GAS+`?type=meter&car=${car}`)
+.then(r=>r.json())
+.then(m=>endMeter.value=m);
+
+// 同乗者
+allDrivers = init.drivers;
+changeGroup();
+
+}
+
+function changeGroup(){
+
+const group = document.getElementById("group").value;
+const div = document.getElementById("passengerList");
+
+div.innerHTML="";
+
+allDrivers.filter(d=>d.dept===group).forEach(d=>{
+
+const checked = selectedPassengers.has(d.name) ? "checked":"";
+
+const label=document.createElement("label");
+
+label.innerHTML=`
+<input type="checkbox" value="${d.name}" ${checked}>
+${d.name}
+`;
+
+label.querySelector("input").onchange=e=>{
+if(e.target.checked) selectedPassengers.add(d.name);
+else selectedPassengers.delete(d.name);
+};
+
+div.appendChild(label);
+div.appendChild(document.createElement("br"));
+
+});
+
+}
+
 function arrival(){
 
-// キャッシュ削除
-localStorage.removeItem("init");
+const endMeter = document.getElementById("endMeter").value;
 
-// 同乗者取得（チェック＋手入力）
-const checked = [...document.querySelectorAll("#passengerList input:checked")]
+// 同乗者
+const checked=[...document.querySelectorAll("#passengerList input:checked")]
 .map(c=>c.value);
 
-const manual = document.getElementById("passengers")?.value || "";
+const manual=document.getElementById("passengers").value;
 
-const passengers = [...checked, manual].filter(x=>x).join(",");
+const passengers=[...checked,manual].filter(x=>x).join(",");
 
-// 行先など
-const destination = document.getElementById("destination")?.value || "";
-const purpose = document.getElementById("purpose")?.value || "";
-const memo = document.getElementById("memo")?.value || "";
+// その他
+const destination=document.getElementById("destination").value;
+const purpose=document.getElementById("purpose").value;
+const memo=document.getElementById("memo").value;
 
-// GPSなしでも動くようにする
-if(!navigator.geolocation){
-sendArrival(passengers,destination,purpose,memo,0,0);
-return;
-}
+localStorage.removeItem("init");
 
-navigator.geolocation.getCurrentPosition(
-pos=>{
-sendArrival(
-passengers,
-destination,
-purpose,
-memo,
-pos.coords.latitude,
-pos.coords.longitude
-);
-},
-()=>{
-// GPS失敗でも続行
-sendArrival(passengers,destination,purpose,memo,0,0);
-}
-);
+navigator.geolocation.getCurrentPosition(pos=>{
+
+sendArrival(passengers,destination,purpose,memo,endMeter,pos.coords.latitude,pos.coords.longitude);
+
+},()=>{
+sendArrival(passengers,destination,purpose,memo,endMeter,0,0);
+});
 
 }
 
-async function sendArrival(passengers,destination,purpose,memo,lat,lng){
+function sendArrival(passengers,destination,purpose,memo,endMeter,lat,lng){
 
-await fetch(GAS,{
+fetch(GAS,{
 method:"POST",
 body:JSON.stringify({
 type:"arrival",
 car:localStorage.getItem("lastCar"),
-endMeter:endMeter.value,
+endMeter:endMeter,
 lat:lat,
 lng:lng,
 passengers:passengers,
@@ -182,56 +206,8 @@ location.href="driver_start.html";
 
 }
 
-let allDrivers=[];
-let selectedPassengers=new Set();
+// ---------------- 共通 ----------------
 
-function loadPassengers(init){
-
-allDrivers = init.drivers;
-changeGroup();
-
-}
-
-function changeGroup(){
-
-const group = document.getElementById("group").value;
-const div = document.getElementById("passengerList");
-
-if(!div) return;
-
-div.innerHTML="";
-
-allDrivers
-.filter(d=>d.dept===group)
-.forEach(d=>{
-
-const checked = selectedPassengers.has(d.name) ? "checked" : "";
-
-const label=document.createElement("label");
-
-label.innerHTML=`
-<input type="checkbox" value="${d.name}" ${checked}>
-${d.name}
-`;
-
-label.querySelector("input").onchange=(e)=>{
-if(e.target.checked){
-selectedPassengers.add(d.name);
-}else{
-selectedPassengers.delete(d.name);
-}
-};
-
-div.appendChild(label);
-div.appendChild(document.createElement("br"));
-
-});
-
-}
-
-// -----------------------------
-// ★ ログアウト
-// -----------------------------
 function logout(){
 localStorage.clear();
 location.href="index.html";
