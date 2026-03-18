@@ -39,7 +39,23 @@ car.dispatchEvent(new Event("change"));
 
 loadRunning();
 loadReservations();
+  
+// ★このブロックをwindow.onload内の最後に追加
 
+// 到着画面ならメーター取得
+if(document.getElementById("endMeter")){
+
+const car=localStorage.getItem("lastCar");
+
+if(car){
+
+const m=await fetch(GAS+`?type=meter&car=${car}`).then(r=>r.json());
+
+document.getElementById("endMeter").value=m;
+
+}
+
+}
 };
 
 
