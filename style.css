@@ -1,0 +1,11 @@
+body{
+font-size:18px;
+padding:10px;
+}
+
+input,select,button{
+width:100%;
+font-size:18px;
+margin:5px 0;
+padding:10px;
+}
