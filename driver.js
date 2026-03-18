@@ -184,6 +184,8 @@ car.appendChild(opt);
 });
 
 }
+
+// ★一番下に追加
 function logout(){
 
 localStorage.removeItem("user");
@@ -191,10 +193,32 @@ location.href="index.html";
 
 }
 
-// ★一番下に追加
-function logout(){
+// =====================
+// 到着処理（★これを追加）
+// =====================
+async function arrival(){
 
-localStorage.removeItem("user");
-location.href="index.html";
+const endMeter=
+Number(document.getElementById("endMeter").value)
++
+Number(document.getElementById("adjust").value);
+
+navigator.geolocation.getCurrentPosition(async pos=>{
+
+await fetch(GAS,{
+method:"POST",
+body:JSON.stringify({
+type:"arrival",
+endMeter:endMeter,
+lat:pos.coords.latitude,
+lng:pos.coords.longitude
+})
+});
+
+alert("到着登録完了");
+
+location.href="driver_start.html";
+
+});
 
 }
