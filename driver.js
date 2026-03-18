@@ -1,3 +1,17 @@
+// ★ここを一番上に追加
+let CACHE={};
+
+async function getData(type){
+
+if(CACHE[type]) return CACHE[type];
+
+const res=await fetch(GAS+"?type="+type).then(r=>r.json());
+
+CACHE[type]=res;
+
+return res;
+
+}
 const GAS="https://script.google.com/macros/s/AKfycbxkgNmKdoeilTzXtelG_1VZNu8MHP0wxxkPNLaS-OY4Ix2V08bxJx7CyYMlozKyirLN/exec";
 
 const car=document.getElementById("car");
