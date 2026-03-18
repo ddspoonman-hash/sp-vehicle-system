@@ -1,16 +1,32 @@
 <!DOCTYPE html>
 <html>
 <head>
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<link rel="stylesheet" href="style.css">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>出発</title>
+
+<style>
+body{font-family:sans-serif;margin:10px;}
+.card{background:#fff;padding:15px;margin:10px 0;border-radius:10px;box-shadow:0 0 5px #ccc;}
+button{width:100%;padding:15px;font-size:18px;margin-top:10px;}
+select,input{width:100%;padding:10px;margin-top:5px;}
+.header{display:flex;justify-content:space-between;}
+</style>
+
 </head>
 
 <body>
-<div class="header">車両管理</div>
-<h2>出発</h2>
+
+<div class="header">
+<div id="user"></div>
+<button onclick="logout()">ログアウト</button>
+</div>
 
 <div class="card">
-<div id="user"></div>
+<h3>車両選択</h3>
+<select id="car"></select>
+
+<h3>現在メーター</h3>
+<input id="meter" readonly>
 </div>
 
 <div class="card">
@@ -18,13 +34,7 @@
 <div id="running"></div>
 </div>
 
-<div class="card">
-<select id="car"></select>
-<input id="meter" disabled>
 <button onclick="start()">出発</button>
-</div>
-
-<button onclick="logout()">ログアウト</button>
 
 <script src="driver.js"></script>
 
