@@ -1,44 +1,8 @@
-<!DOCTYPE html>
-<html>
-<head>
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>管理画面</title>
-<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBnt8NoM9nwYgj6_xgWbks114zUM6csGKg"></script>
-</head>
+<h2>メーター補正</h2>
 
-<body>
+<select id="car"></select>
+<input id="meter" type="number">
 
-<h2>管理画面</h2>
-
-<button onclick="logout()">ログアウト</button>
-
-<h3>走行中車両</h3>
-<div id="map" style="height:400px"></div>
-
-<h3>車両管理</h3>
-<input id="newCar">
-<button onclick="addCar()">追加</button>
-<div id="carList"></div>
-
-<h3>運転者管理</h3>
-<input id="newDriver">
-<button onclick="addDriver()">追加</button>
-<div id="driverList"></div>
+<button onclick="updateMeter()">更新</button>
 
 <script src="admin.js"></script>
-<button onclick="logout()">ログアウト</button>
-</body>
-  <style>
-body{
-font-size:18px;
-padding:10px;
-}
-
-input,select,button{
-font-size:18px;
-width:100%;
-margin:5px 0;
-padding:10px;
-}
-</style>
-</html>
