@@ -8,15 +8,23 @@ drivers=await fetch(GAS+"?type=drivers").then(r=>r.json());
 
 function login(){
 
-const id=idInput.value;
-const pass=passInput.value;
+const id=document.getElementById("id").value;
+const pass=document.getElementById("pass").value;
 
 const user=drivers.find(d=>d.id===id);
 
-if(!user) return alert("IDなし");
-if(user.pass!=pass) return alert("PASS違い");
+if(!user){
+alert("IDが存在しません");
+return;
+}
+
+if(user.pass!=pass){
+alert("パスワードが違います");
+return;
+}
 
 localStorage.setItem("user",JSON.stringify(user));
+
 location.href="driver_start.html";
 
 }
