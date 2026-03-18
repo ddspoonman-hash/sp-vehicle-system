@@ -9,16 +9,26 @@ window.onload = async ()=>{
 const user = JSON.parse(localStorage.getItem("user"));
 if(!user){location.href="index.html";return;}
 
-if(document.getElementById("user")){
-document.getElementById("user").innerText=user.name;
-}
-
-// 初期データ取得（高速化）
+// init取得
 init = JSON.parse(localStorage.getItem("init"));
 if(!init){
 init = await fetch(GAS+"?type=init").then(r=>r.json());
 localStorage.setItem("init",JSON.stringify(init));
 }
+
+// ★↓↓↓↓ ここに追加 ↓↓↓↓
+const driverList = document.getElementById("driverList");
+
+if(driverList){
+driverList.innerHTML="";
+
+(init.drivers||[]).forEach(d=>{
+const o=document.createElement("option");
+o.value=d.name;
+driverList.appendChild(o);
+});
+}
+// ★↑↑↑↑ ここまで ↑↑↑↑
 
 // 出発画面
 if(document.getElementById("car")){
