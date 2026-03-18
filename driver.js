@@ -1,17 +1,3 @@
-// ★ここを一番上に追加
-let CACHE={};
-
-async function getData(type){
-
-if(CACHE[type]) return CACHE[type];
-
-const res=await fetch(GAS+"?type="+type).then(r=>r.json());
-
-CACHE[type]=res;
-
-return res;
-
-}
 const GAS="https://script.google.com/macros/s/AKfycbxkgNmKdoeilTzXtelG_1VZNu8MHP0wxxkPNLaS-OY4Ix2V08bxJx7CyYMlozKyirLN/exec";
 
 const car=document.getElementById("car");
@@ -20,160 +6,69 @@ const meter=document.getElementById("meter");
 window.onload=async()=>{
 
 const user=JSON.parse(localStorage.getItem("user"));
-document.getElementById("user").innerText=`ログイン：${user.name}`;
+if(!user){ location.href="index.html"; return; }
 
-// ★ここ差し替え
-await loadCarsWithLock();
+if(document.getElementById("user")){
+document.getElementById("user").innerText=user.name;
+}
 
-// メーター
+// 初期データ一括取得
+const init=await fetch(GAS+"?type=init").then(r=>r.json());
+
+if(car){
+
+loadCars(init,user);
+
 car.onchange=async()=>{
 const m=await fetch(GAS+`?type=meter&car=${car.value}`).then(r=>r.json());
 meter.value=m;
 };
 
-// 初期選択
-if(car.options.length>0){
-car.selectedIndex=0;
 car.dispatchEvent(new Event("change"));
+
+loadRunning(init);
+loadReservations(init);
+
 }
 
-loadRunning();
-loadReservations();
-  
-// ★このブロックをwindow.onload内の最後に追加
-
-// 到着画面ならメーター取得
+// 到着画面
 if(document.getElementById("endMeter")){
-
-const car=localStorage.getItem("lastCar");
-
-if(car){
-
-const m=await fetch(GAS+`?type=meter&car=${car}`).then(r=>r.json());
-
+const c=localStorage.getItem("lastCar");
+if(c){
+const m=await fetch(GAS+`?type=meter&car=${c}`).then(r=>r.json());
 document.getElementById("endMeter").value=m;
-
+}
 }
 
-}
 };
 
-
-// ■ 使用中車両
-async function loadRunning(){
-
-const list=await fetch(GAS+"?type=running").then(r=>r.json());
-
-const div=document.getElementById("running");
-div.innerHTML="";
-
-if(list.length===0){
-div.innerHTML="なし";
-return;
-}
-
-list.forEach(r=>{
-div.innerHTML+=`${r.car}（${r.driver}）<br>`;
-});
-
-}
-
-
-// ■ 予約表示（本日）
-async function loadReservations(){
-
-const list=await fetch(GAS+"?type=reservations").then(r=>r.json());
-
-const today=new Date().toISOString().slice(0,10);
-
-const div=document.getElementById("reservations");
-div.innerHTML="";
-
-const todayList=list.filter(r=>r.date===today);
-
-if(todayList.length===0){
-div.innerHTML="なし";
-return;
-}
-
-todayList.forEach(r=>{
-div.innerHTML+=`${r.start}-${r.end} ${r.car}（${r.user}）<br>`;
-});
-
-}
-
-
-// ■ 出発
-async function start(){
-
-if(car.selectedOptions[0].disabled){
-alert("この車両は使用できません");
-return;
-}
-
-const user=JSON.parse(localStorage.getItem("user"));
-
-navigator.geolocation.getCurrentPosition(async pos=>{
-// ★追加（fetchの前）
-localStorage.setItem("lastCar",car.value);
-await fetch(GAS,{
-method:"POST",
-body:JSON.stringify({
-type:"start",
-car:car.value,
-driver:user.name,
-startMeter:meter.value,
-lat:pos.coords.latitude,
-lng:pos.coords.longitude
-})
-});
-
-location.href="driver_arrival.html";
-
-});
-
-}
-
-async function loadCarsWithLock(){
-
-const user=JSON.parse(localStorage.getItem("user"));
-
-const cars=await getData("cars");
-const running=await getData("running");
-const reservations=await getData("reservations");
+// 車両ロック
+function loadCars(init,user){
 
 const today=new Date().toISOString().slice(0,10);
 
 car.innerHTML="";
 
-cars.forEach(c=>{
+init.cars.forEach(c=>{
 
 let disabled=false;
 let label=c;
 
-// ■ 使用中チェック
-const isRunning=running.find(r=>r.car===c);
+// 使用中
+const run=init.running.find(r=>r.car===c);
+if(run){ disabled=true; label+="（使用中）"; }
 
-if(isRunning){
-disabled=true;
-label+="（使用中）";
-}
-
-// ■ 予約チェック（今日）
-const rsv=reservations.find(r=>r.car===c && r.date===today);
-
+// 予約
+const rsv=init.reservations.find(r=>r.car===c && r.date===today);
 if(rsv){
-
 if(rsv.user!==user.name){
 disabled=true;
 label+=`（予約:${rsv.user}）`;
 }else{
 label+="（自分予約）";
 }
-
 }
 
-// option生成
 const opt=document.createElement("option");
 opt.value=c;
 opt.textContent=label;
@@ -185,23 +80,64 @@ car.appendChild(opt);
 
 }
 
-// ★一番下に追加
-function logout(){
+// 使用中表示
+function loadRunning(init){
 
-localStorage.removeItem("user");
-location.href="index.html";
+const div=document.getElementById("running");
+div.innerHTML="";
+
+init.running.forEach(r=>{
+div.innerHTML+=`${r.car}（${r.driver}）<br>`;
+});
 
 }
 
-// =====================
-// 到着処理（★これを追加）
-// =====================
+// 予約表示
+function loadReservations(init){
+
+const today=new Date().toISOString().slice(0,10);
+
+const div=document.getElementById("reservations");
+div.innerHTML="";
+
+init.reservations
+.filter(r=>r.date===today)
+.forEach(r=>{
+div.innerHTML+=`${r.start}-${r.end} ${r.car}<br>`;
+});
+
+}
+
+// 出発
+async function start(){
+
+const user=JSON.parse(localStorage.getItem("user"));
+
+localStorage.setItem("lastCar",car.value);
+
+navigator.geolocation.getCurrentPosition(async pos=>{
+
+await fetch(GAS,{
+method:"POST",
+body:JSON.stringify({
+type:"start",
+car:car.value,
+driver:user.name,
+lat:pos.coords.latitude,
+lng:pos.coords.longitude
+})
+});
+
+location.href="driver_arrival.html";
+
+});
+
+}
+
+// 到着
 async function arrival(){
 
-const endMeter=
-Number(document.getElementById("endMeter").value)
-+
-Number(document.getElementById("adjust").value);
+const endMeter=document.getElementById("endMeter").value;
 
 navigator.geolocation.getCurrentPosition(async pos=>{
 
@@ -215,10 +151,15 @@ lng:pos.coords.longitude
 })
 });
 
-alert("到着登録完了");
-
+alert("完了");
 location.href="driver_start.html";
 
 });
 
+}
+
+// ログアウト
+function logout(){
+localStorage.removeItem("user");
+location.href="index.html";
 }
