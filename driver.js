@@ -173,3 +173,11 @@ localStorage.removeItem("user");
 location.href="index.html";
 
 }
+
+// ★一番下に追加
+function logout(){
+
+localStorage.removeItem("user");
+location.href="index.html";
+
+}
