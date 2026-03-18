@@ -1,33 +1,31 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
 <h2>出発</h2>
 
 <div id="user"></div>
 
-<h3>現在使用中</h3>
+<h3>使用中車両</h3>
 <div id="running"></div>
 
-<h3>予約状況（本日）</h3>
+<h3>本日の予約</h3>
 <div id="reservations"></div>
 
 車両
 <select id="car"></select>
 
-メーター（自動）
+メーター
 <input id="meter" disabled>
 
 <button onclick="start()">出発</button>
+<button onclick="logout()">ログアウト</button>
 
 <script src="driver.js"></script>
-<button onclick="logout()">ログアウト</button>
-<style>
-body{
-font-size:18px;
-padding:10px;
-}
 
-input,select,button{
-font-size:18px;
-width:100%;
-margin:5px 0;
-padding:10px;
-}
-</style>
+</body>
+</html>
