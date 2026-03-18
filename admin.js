@@ -1,35 +1,77 @@
 const GAS="https://script.google.com/macros/s/AKfycbxkgNmKdoeilTzXtelG_1VZNu8MHP0wxxkPNLaS-OY4Ix2V08bxJx7CyYMlozKyirLN/exec";
 
-window.onload=async()=>{
+async function load(){
 
-const init=await fetch(GAS+"?type=init").then(r=>r.json());
+const data = await fetch(GAS+"?type=init").then(r=>r.json());
 
-init.cars.forEach(c=>{
-const o=document.createElement("option");
-o.value=c;
-o.textContent=c;
-car.appendChild(o);
+const div = document.getElementById("running");
+
+div.innerHTML="";
+
+data.running.forEach(r=>{
+
+div.innerHTML += `
+車両：${r.car}<br>
+運転者：${r.driver}<br>
+位置：${r.lat}, ${r.lng}<br>
+<hr>
+`;
+
 });
 
-// 現在位置表示
-map.innerHTML="";
-init.running.forEach(r=>{
-map.innerHTML+=`${r.car}:${r.lat},${r.lng}<br>`;
-});
+}
 
-};
-
-function updateMeter(){
+// ---------------- 車両追加 ----------------
+function addCar(){
 
 fetch(GAS,{
 method:"POST",
 body:JSON.stringify({
-type:"updateMeter",
-car:car.value,
-meter:meter.value
+type:"addCar",
+car:document.getElementById("newCar").value
 })
 });
 
-alert("更新完了");
+alert("追加OK");
+load();
 
 }
+
+// ---------------- ドライバー追加 ----------------
+function addDriver(){
+
+fetch(GAS,{
+method:"POST",
+body:JSON.stringify({
+type:"addDriver",
+id:document.getElementById("newId").value,
+name:document.getElementById("newName").value,
+dept:document.getElementById("newDept").value,
+pass:document.getElementById("newPass").value
+})
+});
+
+alert("追加OK");
+load();
+
+}
+
+// ---------------- メーター補正 ----------------
+function fixMeter(){
+
+fetch(GAS,{
+method:"POST",
+body:JSON.stringify({
+type:"fixMeter",
+car:document.getElementById("fixCar").value,
+meter:document.getElementById("fixMeter").value
+})
+});
+
+alert("更新OK");
+load();
+
+}
+
+// 初期ロード
+load();
