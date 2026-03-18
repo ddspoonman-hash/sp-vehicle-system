@@ -1,18 +1,32 @@
 const GAS="https://script.google.com/macros/s/AKfycbxkgNmKdoeilTzXtelG_1VZNu8MHP0wxxkPNLaS-OY4Ix2V08bxJx7CyYMlozKyirLN/exec";
 
+const car=document.getElementById("car");
+const meter=document.getElementById("meter");
+const running=document.getElementById("running");
+const endMeter=document.getElementById("endMeter");
+
 window.onload=async()=>{
 
 const user=JSON.parse(localStorage.getItem("user"));
-if(!user) location.href="index.html";
+if(!user){ location.href="index.html"; return; }
 
-if(user) document.getElementById("user")?.innerText=user.name;
+if(document.getElementById("user")){
+document.getElementById("user").innerText=user.name;
+}
 
-// init取得
 const init=await fetch(GAS+"?type=init").then(r=>r.json());
 
-// 車両UI
+// 出発画面
 if(car){
-loadCars(init,user);
+
+car.innerHTML="";
+
+init.cars.forEach(c=>{
+const opt=document.createElement("option");
+opt.value=c;
+opt.textContent=c;
+car.appendChild(opt);
+});
 
 car.onchange=async()=>{
 const m=await fetch(GAS+`?type=meter&car=${car.value}`).then(r=>r.json());
@@ -20,72 +34,31 @@ meter.value=m;
 };
 
 car.dispatchEvent(new Event("change"));
-loadRunning(init);
-}
-
-// 到着
-if(endMeter){
-const c=localStorage.getItem("lastCar");
-const m=await fetch(GAS+`?type=meter&car=${c}`).then(r=>r.json());
-endMeter.value=m;
-}
-
-};
-
-// 車両ロック
-function loadCars(init,user){
-
-const today=new Date().toISOString().slice(0,10);
-
-car.innerHTML="";
-
-init.cars.forEach(c=>{
-
-let disabled=false;
-let label=c;
-
-if(init.running.find(r=>r.car===c)){
-disabled=true;
-label+="（使用中）";
-}
-
-const rsv=init.reservations.find(r=>r.car===c && r.date===today);
-
-if(rsv){
-if(rsv.user!==user.name){
-disabled=true;
-label+="（予約）";
-}else{
-label+="（自分）";
-}
-}
-
-const opt=document.createElement("option");
-opt.value=c;
-opt.textContent=label;
-opt.disabled=disabled;
-car.appendChild(opt);
-
-});
-
-}
-
-// 使用中表示
-function loadRunning(init){
 
 running.innerHTML="";
-
 init.running.forEach(r=>{
 running.innerHTML+=`${r.car}（${r.driver}）<br>`;
 });
 
 }
 
-// 出発
+// 到着画面
+if(endMeter){
+
+const c=localStorage.getItem("lastCar");
+
+if(c){
+const m=await fetch(GAS+`?type=meter&car=${c}`).then(r=>r.json());
+endMeter.value=m;
+}
+
+}
+
+};
+
 function start(){
 
 const user=JSON.parse(localStorage.getItem("user"));
-
 localStorage.setItem("lastCar",car.value);
 
 navigator.geolocation.getCurrentPosition(async pos=>{
@@ -109,7 +82,6 @@ location.href="driver_arrival.html";
 
 }
 
-// 到着
 function arrival(){
 
 navigator.geolocation.getCurrentPosition(async pos=>{
