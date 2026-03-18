@@ -122,7 +122,26 @@ fetch(GAS+`?type=meter&car=${car}`)
 // 同乗者
 allDrivers = init.drivers;
 changeGroup();
+  
+// 行先
+const destList = document.getElementById("destList");
+destList.innerHTML="";
 
+(init.destinations||[]).forEach(d=>{
+const o=document.createElement("option");
+o.value=d;
+destList.appendChild(o);
+});
+
+// 用件
+const purposeList = document.getElementById("purposeList");
+purposeList.innerHTML="";
+
+(init.purposes||[]).forEach(p=>{
+const o=document.createElement("option");
+o.value=p;
+purposeList.appendChild(o);
+});
 }
 
 function changeGroup(){
