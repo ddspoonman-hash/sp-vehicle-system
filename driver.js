@@ -180,6 +180,53 @@ location.href="driver_start.html";
 
 }
 
+let allDrivers=[];
+let selectedPassengers=new Set();
+
+function loadPassengers(init){
+
+allDrivers = init.drivers;
+changeGroup();
+
+}
+
+function changeGroup(){
+
+const group = document.getElementById("group").value;
+const div = document.getElementById("passengerList");
+
+if(!div) return;
+
+div.innerHTML="";
+
+allDrivers
+.filter(d=>d.dept===group)
+.forEach(d=>{
+
+const checked = selectedPassengers.has(d.name) ? "checked" : "";
+
+const label=document.createElement("label");
+
+label.innerHTML=`
+<input type="checkbox" value="${d.name}" ${checked}>
+${d.name}
+`;
+
+label.querySelector("input").onchange=(e)=>{
+if(e.target.checked){
+selectedPassengers.add(d.name);
+}else{
+selectedPassengers.delete(d.name);
+}
+};
+
+div.appendChild(label);
+div.appendChild(document.createElement("br"));
+
+});
+
+}
+
 // -----------------------------
 // ★ ログアウト
 // -----------------------------
