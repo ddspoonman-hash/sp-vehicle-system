@@ -121,9 +121,9 @@ async function loadCarsWithLock(){
 
 const user=JSON.parse(localStorage.getItem("user"));
 
-const cars=await fetch(GAS+"?type=cars").then(r=>r.json());
-const running=await fetch(GAS+"?type=running").then(r=>r.json());
-const reservations=await fetch(GAS+"?type=reservations").then(r=>r.json());
+const cars=await getData("cars");
+const running=await getData("running");
+const reservations=await getData("reservations");
 
 const today=new Date().toISOString().slice(0,10);
 
