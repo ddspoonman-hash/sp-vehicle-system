@@ -6,18 +6,17 @@ window.onload=async()=>{
 drivers=await fetch(GAS+"?type=drivers").then(r=>r.json());
 };
 
-async function login(){
+function login(){
 
-const id=document.getElementById("id").value;
-const pass=document.getElementById("pass").value;
+const id=idInput.value;
+const pass=passInput.value;
 
 const user=drivers.find(d=>d.id===id);
 
-if(!user){ alert("IDなし"); return; }
-if(user.pass!=pass){ alert("PASS違い"); return; }
+if(!user) return alert("IDなし");
+if(user.pass!=pass) return alert("PASS違い");
 
 localStorage.setItem("user",JSON.stringify(user));
-
 location.href="driver_start.html";
 
 }
