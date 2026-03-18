@@ -13,18 +13,10 @@ const pass=document.getElementById("pass").value;
 
 const user=drivers.find(d=>d.id===id);
 
-if(!user){
-alert("IDが存在しません");
-return;
-}
-
-if(user.pass!=pass){
-alert("パスワードが違います");
-return;
-}
+if(!user){ alert("IDなし"); return; }
+if(user.pass!=pass){ alert("PASS違い"); return; }
 
 localStorage.setItem("user",JSON.stringify(user));
-
 location.href="driver_start.html";
 
 }
