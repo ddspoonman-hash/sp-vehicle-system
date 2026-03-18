@@ -1,20 +1,21 @@
-<!DOCTYPE html>
-<html>
-<head>
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<link rel="stylesheet" href="style.css">
-</head>
-<body>
+<h2>出発</h2>
 
-<h2>到着</h2>
+<div class="card">
+<div id="user"></div>
+</div>
 
-到着メーター
-<input id="endMeter" type="number">
+<div class="card">
+<h3>使用中車両</h3>
+<div id="running"></div>
+</div>
 
-<button onclick="arrival()">完了</button>
+<div class="card">
+車両<select id="car"></select>
+メーター<input id="meter" disabled>
+<button onclick="start()">出発</button>
+</div>
+
 <button onclick="logout()">ログアウト</button>
 
 <script src="driver.js"></script>
-
-</body>
-</html>
+<link rel="stylesheet" href="style.css">
