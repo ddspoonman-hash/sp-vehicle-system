@@ -117,10 +117,48 @@ location.href="driver_arrival.html";
 // -----------------------------
 function arrival(){
 
-// キャッシュ削除（重要）
+// キャッシュ削除
 localStorage.removeItem("init");
 
-navigator.geolocation.getCurrentPosition(async pos=>{
+// 同乗者取得（チェック＋手入力）
+const checked = [...document.querySelectorAll("#passengerList input:checked")]
+.map(c=>c.value);
+
+const manual = document.getElementById("passengers")?.value || "";
+
+const passengers = [...checked, manual].filter(x=>x).join(",");
+
+// 行先など
+const destination = document.getElementById("destination")?.value || "";
+const purpose = document.getElementById("purpose")?.value || "";
+const memo = document.getElementById("memo")?.value || "";
+
+// GPSなしでも動くようにする
+if(!navigator.geolocation){
+sendArrival(passengers,destination,purpose,memo,0,0);
+return;
+}
+
+navigator.geolocation.getCurrentPosition(
+pos=>{
+sendArrival(
+passengers,
+destination,
+purpose,
+memo,
+pos.coords.latitude,
+pos.coords.longitude
+);
+},
+()=>{
+// GPS失敗でも続行
+sendArrival(passengers,destination,purpose,memo,0,0);
+}
+);
+
+}
+
+async function sendArrival(passengers,destination,purpose,memo,lat,lng){
 
 await fetch(GAS,{
 method:"POST",
@@ -128,19 +166,17 @@ body:JSON.stringify({
 type:"arrival",
 car:localStorage.getItem("lastCar"),
 endMeter:endMeter.value,
-lat:pos.coords.latitude,
-lng:pos.coords.longitude,
-passengers:document.getElementById("passengers")?.value || "",
-destination:document.getElementById("destination")?.value || "",
-purpose:document.getElementById("purpose")?.value || "",
-memo:document.getElementById("memo")?.value || ""
+lat:lat,
+lng:lng,
+passengers:passengers,
+destination:destination,
+purpose:purpose,
+memo:memo
 })
 });
 
 alert("完了");
 location.href="driver_start.html";
-
-});
 
 }
 
