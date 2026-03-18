@@ -1,25 +1,23 @@
 <!DOCTYPE html>
 <html>
 <head>
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<link rel="stylesheet" href="style.css">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>到着</title>
+
+<style>
+body{font-family:sans-serif;margin:10px;}
+.card{background:#fff;padding:15px;margin:10px 0;border-radius:10px;box-shadow:0 0 5px #ccc;}
+button{width:100%;padding:15px;font-size:18px;margin-top:10px;}
+input,select{width:100%;padding:10px;margin-top:5px;}
+</style>
+
 </head>
 
 <body>
-<div class="header">車両管理</div>
-<h2>到着</h2>
 
 <div class="card">
-
-<input id="endMeter" disabled>
-
-<input id="passengers" placeholder="同乗者">
-<input id="destination" placeholder="行き先">
-<input id="purpose" placeholder="用件">
-<input id="memo" placeholder="備考">
-
-<button onclick="arrival()">完了</button>
-
+<h3>到着メーター（自動）</h3>
+<input id="endMeter" readonly>
 </div>
 
 <div class="card">
@@ -34,7 +32,28 @@
 
 <input id="passengers" placeholder="手入力可">
 </div>
-  
+
+<div class="card">
+<h3>行先</h3>
+<input list="destList" id="destination">
+<datalist id="destList">
+<option value="市役所">
+<option value="病院">
+</datalist>
+
+<h3>用件</h3>
+<input list="purposeList" id="purpose">
+<datalist id="purposeList">
+<option value="送迎">
+<option value="訪問">
+</datalist>
+
+<h3>備考</h3>
+<input id="memo">
+</div>
+
+<button onclick="arrival()">完了</button>
+
 <script src="driver.js"></script>
 
 </body>
