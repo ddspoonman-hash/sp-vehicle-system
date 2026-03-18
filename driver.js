@@ -78,6 +78,8 @@ endMeter.value = m;
 
 }
 
+loadPassengers(init);
+  
 };
 
 // -----------------------------
