@@ -5,10 +5,6 @@ margin:0;
 padding:10px;
 }
 
-h2{
-text-align:center;
-}
-
 .card{
 background:white;
 padding:15px;
@@ -19,11 +15,10 @@ box-shadow:0 2px 6px rgba(0,0,0,0.1);
 
 input,select,button{
 width:100%;
-padding:12px;
-margin-top:8px;
-font-size:16px;
-border-radius:8px;
-border:1px solid #ccc;
+padding:14px;
+margin-top:10px;
+font-size:18px;
+border-radius:10px;
 }
 
 button{
@@ -32,6 +27,6 @@ color:white;
 border:none;
 }
 
-button:active{
-transform:scale(0.98);
+h2{
+text-align:center;
 }
