@@ -1,8 +1,15 @@
-<h2>メーター補正</h2>
+<h2>管理画面</h2>
 
-<select id="car"></select>
-<input id="meter" type="number">
+<div class="card">
+<h3>現在位置</h3>
+<div id="map"></div>
+</div>
 
+<div class="card">
+車両<select id="car"></select>
+メーター<input id="meter">
 <button onclick="updateMeter()">更新</button>
+</div>
 
 <script src="admin.js"></script>
+<link rel="stylesheet" href="style.css">
