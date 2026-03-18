@@ -1,16 +1,52 @@
-<div class="header">車両管理</div>
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>管理画面</title>
+
+<style>
+body{font-family:sans-serif;margin:10px;}
+.card{background:#fff;padding:15px;margin:10px 0;border-radius:10px;box-shadow:0 0 5px #ccc;}
+button{width:100%;padding:10px;margin-top:5px;}
+input{width:100%;padding:8px;margin-top:5px;}
+</style>
+
+</head>
+
+<body>
+
 <h2>管理画面</h2>
 
 <div class="card">
-<h3>現在位置</h3>
-<div id="map"></div>
+<h3>使用中車両（位置）</h3>
+<div id="running"></div>
 </div>
 
 <div class="card">
-車両<select id="car"></select>
-メーター<input id="meter">
-<button onclick="updateMeter()">更新</button>
+<h3>車両追加</h3>
+<input id="newCar" placeholder="車両名">
+<button onclick="addCar()">追加</button>
 </div>
 
+<div class="card">
+<h3>ドライバー追加</h3>
+<input id="newId" placeholder="ID">
+<input id="newName" placeholder="名前">
+<input id="newDept" placeholder="所属">
+<input id="newPass" placeholder="PASS">
+<button onclick="addDriver()">追加</button>
+</div>
+
+<div class="card">
+<h3>メーター補正</h3>
+<input id="fixCar" placeholder="車両">
+<input id="fixMeter" placeholder="メーター">
+<button onclick="fixMeter()">更新</button>
+</div>
+
+<button onclick="load()">更新</button>
+
 <script src="admin.js"></script>
-<link rel="stylesheet" href="style.css">
+
+</body>
+</html>
