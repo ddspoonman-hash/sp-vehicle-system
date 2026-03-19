@@ -17,15 +17,22 @@ localStorage.setItem("init",JSON.stringify(init));
 }
 
 // ★↓↓↓↓ ここに追加 ↓↓↓↓
-const driverList = document.getElementById("driverList");
+const driverSelect = document.getElementById("driverName");
 
-if(driverList){
-driverList.innerHTML="";
+if(driverSelect){
+driverSelect.innerHTML="";
+
+// デフォルト
+const def = document.createElement("option");
+def.value="";
+def.textContent="選択してください";
+driverSelect.appendChild(def);
 
 (init.drivers||[]).forEach(d=>{
 const o=document.createElement("option");
 o.value=d.name;
-driverList.appendChild(o);
+o.textContent=d.name;
+driverSelect.appendChild(o);
 });
 }
 // ★↑↑↑↑ ここまで ↑↑↑↑
