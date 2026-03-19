@@ -74,12 +74,16 @@ margin-bottom:10px;
 
 <div class="card">
 <h3>行先</h3>
-<input list="destList" id="destination">
-<datalist id="destList"></datalist>
+
+<select id="destination" onchange="checkDestination()"></select>
+
+<input id="destinationOther" placeholder="その他入力" style="display:none;">
 
 <h3>用件</h3>
-<input list="purposeList" id="purpose">
-<datalist id="purposeList">
+
+<select id="purpose" onchange="checkPurpose()"></select>
+
+<input id="purposeOther" placeholder="その他入力" style="display:none;">
   
 </datalist>
 
