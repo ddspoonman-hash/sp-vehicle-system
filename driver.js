@@ -145,23 +145,36 @@ allDrivers = init.drivers;
 changeGroup();
   
 // 行先
-const destList = document.getElementById("destList");
-destList.innerHTML="";
+const destSelect = document.getElementById("destination");
+destSelect.innerHTML="";
 
 (init.destinations||[]).forEach(d=>{
-const o=document.createElement("option");
-o.value=d;
-destList.appendChild(o);
+  const o=document.createElement("option");
+  o.value=d;
+  o.textContent=d;
+  destSelect.appendChild(o);
 });
 
-// 用件
-const purposeList = document.getElementById("purposeList");
-purposeList.innerHTML="";
+// その他
+const other = document.createElement("option");
+other.value="その他";
+other.textContent="その他";
+destSelect.appendChild(other);
+
+const purposeSelect = document.getElementById("purpose");
+purposeSelect.innerHTML="";
 
 (init.purposes||[]).forEach(p=>{
-const o=document.createElement("option");
-o.value=p;
-purposeList.appendChild(o);
+  const o=document.createElement("option");
+  o.value=p;
+  o.textContent=p;
+  purposeSelect.appendChild(o);
+});
+
+const other2 = document.createElement("option");
+other2.value="その他";
+other2.textContent="その他";
+purposeSelect.appendChild(other2);
 });
 }
 
