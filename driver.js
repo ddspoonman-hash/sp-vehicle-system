@@ -10,11 +10,8 @@ const user = JSON.parse(localStorage.getItem("user"));
 if(!user){location.href="index.html";return;}
 
 // init取得
-init = JSON.parse(localStorage.getItem("init"));
-if(!init){
 init = await fetch(GAS+"?type=init").then(r=>r.json());
 localStorage.setItem("init",JSON.stringify(init));
-}
 
 // ★↓↓↓↓ ここに追加 ↓↓↓↓
 const driverSelect = document.getElementById("driverName");
