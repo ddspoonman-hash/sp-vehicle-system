@@ -221,8 +221,15 @@ const manual=document.getElementById("passengers").value;
 const passengers=[...checked,manual].filter(x=>x).join(",");
 
 // その他
-const destination=document.getElementById("destination").value;
-const purpose=document.getElementById("purpose").value;
+let destination = document.getElementById("destination").value;
+if(destination==="その他"){
+  destination = document.getElementById("destinationOther").value;
+}
+
+let purpose = document.getElementById("purpose").value;
+if(purpose==="その他"){
+  purpose = document.getElementById("purposeOther").value;
+}
 const memo=document.getElementById("memo").value;
 
 localStorage.removeItem("init");
@@ -264,4 +271,17 @@ location.href="driver_start.html";
 function logout(){
 localStorage.clear();
 location.href="index.html";
+}
+
+
+function checkDestination(){
+  const v = document.getElementById("destination").value;
+  document.getElementById("destinationOther").style.display =
+    (v==="その他") ? "block":"none";
+}
+
+function checkPurpose(){
+  const v = document.getElementById("purpose").value;
+  document.getElementById("purposeOther").style.display =
+    (v==="その他") ? "block":"none";
 }
