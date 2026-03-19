@@ -7,8 +7,12 @@ window.onload = async ()=>{
 try{
 
 const user = JSON.parse(localStorage.getItem("user"));
-if(!user){location.href="index.html";return;}
+if(!user){
+location.href="index.html";
+return;
+}
 
+// ★キャッシュ防止
 const res = await fetch(GAS+"?type=init&time="+Date.now());
 init = await res.json();
 
@@ -19,10 +23,17 @@ const driver = document.getElementById("driverName");
 if(driver){
 driver.innerHTML="";
 
+// デフォルト
+const def = document.createElement("option");
+def.value="";
+def.textContent="選択してください";
+driver.appendChild(def);
+
+// データ
 (init.drivers||[]).forEach(d=>{
 const o=document.createElement("option");
 o.value=d.name;
-o.textContent=d.name;
+o.textContent=d.name+"（"+d.dept+"）";
 driver.appendChild(o);
 });
 }
@@ -42,7 +53,7 @@ car.appendChild(o);
 
 }catch(e){
 console.error("初期化エラー", e);
-alert("データ取得エラー");
+alert("データ取得失敗");
 }
 
 };
@@ -52,8 +63,8 @@ function start(){
 
 const user = JSON.parse(localStorage.getItem("user"));
 
-const driverName = document.getElementById("driverName")?.value || user.name;
-const car = document.getElementById("car")?.value;
+const car = document.getElementById("car").value;
+const driverName = document.getElementById("driverName").value || user.name;
 
 if(!car){
 alert("車両選択して");
