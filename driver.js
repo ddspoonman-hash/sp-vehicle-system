@@ -79,6 +79,9 @@ const user = JSON.parse(localStorage.getItem("user"));
 const car = document.getElementById("car").value;
 const meter = document.getElementById("meter").value;
 
+// ★ここで取得（外に出すのがポイント）
+const driverInput = document.getElementById("driverName");
+
 localStorage.setItem("lastCar",car);
 localStorage.removeItem("init");
 
@@ -89,20 +92,7 @@ method:"POST",
 body:JSON.stringify({
 type:"start",
 car:car,
-const driverInput = document.getElementById("driverName");
-
-fetch(GAS,{
-method:"POST",
-body:JSON.stringify({
-type:"start",
-car:car,
-driver: driverInput.value || user.name, // ←ここ
-dept:user.dept,
-startMeter:meter,
-lat:pos.coords.latitude,
-lng:pos.coords.longitude
-})
-});
+driver: driverInput.value || user.name, // ←ここが効く
 dept:user.dept,
 startMeter:meter,
 lat:pos.coords.latitude,
@@ -113,19 +103,23 @@ lng:pos.coords.longitude
 location.href="driver_arrival.html";
 
 },()=>{
+
 // GPS失敗でも進む
 fetch(GAS,{
 method:"POST",
 body:JSON.stringify({
 type:"start",
 car:car,
-driver:user.name,
+driver: driverInput.value || user.name, // ←ここも同じにする
 dept:user.dept,
 startMeter:meter,
-lat:0,lng:0
+lat:0,
+lng:0
 })
 });
+
 location.href="driver_arrival.html";
+
 });
 
 }
