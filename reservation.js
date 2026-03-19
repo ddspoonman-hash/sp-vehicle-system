@@ -41,4 +41,21 @@ return;
 alert("予約OK");
 load(); // 一覧更新
 }
+async function initCars(){
+
+const data = await fetch(GAS+"?type=init").then(r=>r.json());
+
+const carSelect = document.getElementById("car");
+
+carSelect.innerHTML=""; // 初期化
+
+data.cars.forEach(c=>{
+  const o=document.createElement("option");
+  o.value=c;
+  o.textContent=c;
+  carSelect.appendChild(o);
+});
+
+}
+
 load();
