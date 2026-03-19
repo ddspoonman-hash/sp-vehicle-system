@@ -89,7 +89,20 @@ method:"POST",
 body:JSON.stringify({
 type:"start",
 car:car,
-driver:user.name,
+const driverInput = document.getElementById("driverName");
+
+fetch(GAS,{
+method:"POST",
+body:JSON.stringify({
+type:"start",
+car:car,
+driver: driverInput.value || user.name, // ←ここ
+dept:user.dept,
+startMeter:meter,
+lat:pos.coords.latitude,
+lng:pos.coords.longitude
+})
+});
 dept:user.dept,
 startMeter:meter,
 lat:pos.coords.latitude,
