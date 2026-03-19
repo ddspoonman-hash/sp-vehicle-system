@@ -58,8 +58,6 @@ data.cars.forEach(c=>{
 
 }
 
-load();
-
 window.onload = ()=>{
   load();
   initCars(); // ←これ追加
