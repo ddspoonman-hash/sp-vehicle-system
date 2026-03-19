@@ -59,3 +59,22 @@ transform:scale(0.97);
 .card{
 margin:12px;
 }
+
+*{
+box-sizing:border-box;
+}
+
+body{
+overflow-x:hidden;
+}
+
+.card{
+width:100%;
+max-width:500px;
+margin:10px auto;
+}
+
+input,select,button{
+width:100%;
+max-width:100%;
+}
