@@ -125,7 +125,7 @@ lng:0
 location.href="driver_arrival.html";
 
 });
-
+startTracking();
 }
 
 // ---------------- 到着 ----------------
@@ -284,4 +284,27 @@ function checkPurpose(){
   const v = document.getElementById("purpose").value;
   document.getElementById("purposeOther").style.display =
     (v==="その他") ? "block":"none";
+}
+
+
+let watchId;
+
+function startTracking(){
+
+watchId = navigator.geolocation.watchPosition(pos=>{
+
+fetch(GAS,{
+method:"POST",
+body:JSON.stringify({
+type:"track",
+car:localStorage.getItem("lastCar"),
+lat:pos.coords.latitude,
+lng:pos.coords.longitude
+})
+});
+
+},{
+enableHighAccuracy:true
+});
+
 }
