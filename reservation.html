@@ -43,17 +43,24 @@ border:none;
 <div class="card">
 <h3>予約追加</h3>
 
+<label>日付</label>
 <input id="date" type="date">
+
+<label>開始時間</label>
 <input id="start" type="time">
+
+<label>終了時間</label>
 <input id="end" type="time">
 
+<label>車両</label>
 <select id="car"></select>
 
-<input id="purpose" placeholder="用件">
+<label>用件</label>
+<input id="purpose" placeholder="例：送迎・通院">
 
 <button onclick="addReservation()">予約する</button>
 </div>
-
+  
 <!-- ② 予約一覧 -->
 <div class="card">
 <h3>予約一覧</h3>
