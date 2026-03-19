@@ -105,3 +105,7 @@ window.onload = ()=>{
   // 自動更新（5秒）
   setInterval(load,5000);
 };
+
+function downloadCSV(){
+  window.open(GAS+"?type=csv");
+}
