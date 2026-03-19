@@ -209,7 +209,9 @@ div.appendChild(document.createElement("br"));
 }
 
 function arrival(){
-
+if(watchId){
+navigator.geolocation.clearWatch(watchId);
+}
 const endMeter = document.getElementById("endMeter").value;
 
 // 同乗者
