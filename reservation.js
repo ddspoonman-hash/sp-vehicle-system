@@ -9,5 +9,36 @@ list.innerText=d
 .join("\n");
 
 }
+async function addReservation(){
 
+const user = JSON.parse(localStorage.getItem("user"));
+
+const date = document.getElementById("date");
+const start = document.getElementById("start");
+const end = document.getElementById("end");
+const car = document.getElementById("car");
+const purpose = document.getElementById("purpose");
+
+const res = await fetch(GAS,{
+method:"POST",
+body:JSON.stringify({
+type:"addReservation",
+date:date.value,
+start:start.value,
+end:end.value,
+car:car.value,
+user:user.name,
+purpose:purpose.value
+})
+}).then(r=>r.json());
+
+// 🚨 ここ重要
+if(res.status=="conflict"){
+alert("その時間は予約済みです");
+return;
+}
+
+alert("予約OK");
+load(); // 一覧更新
+}
 load();
