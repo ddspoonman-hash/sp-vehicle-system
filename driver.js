@@ -103,6 +103,39 @@ alert("完了");
 location.href="driver_start.html";
 }
 
+// ---------------- 車両 ----------------
+const car = document.getElementById("car");
+if(car){
+car.innerHTML="";
+
+(init.cars||[]).forEach(c=>{
+const o=document.createElement("option");
+o.value=c;
+o.textContent=c;
+car.appendChild(o);
+});
+
+// ★↓↓↓↓ これ追加 ↓↓↓↓
+
+// メーター取得
+car.onchange = async ()=>{
+
+const res = await fetch(GAS+`?type=meter&car=${car.value}`);
+const m = await res.json();
+
+const meterInput = document.getElementById("meter");
+if(meterInput){
+meterInput.value = m;
+}
+
+};
+
+// 初期実行
+car.dispatchEvent(new Event("change"));
+
+// ★↑↑↑↑ ここまで ↑↑↑↑
+}
+
 // ---------------- ログアウト ----------------
 function logout(){
 localStorage.clear();
