@@ -5,13 +5,10 @@ function login(){
 const id = document.getElementById("id").value;
 const pass = document.getElementById("pass").value;
 
-const script = document.createElement("script");
+// 毎回ユニークcallback（キャッシュ完全回避）
+const cb = "cb_" + Date.now();
 
-script.src = GAS + "?type=drivers&callback=handleLogin";
-
-document.body.appendChild(script);
-
-window.handleLogin = function(list){
+window[cb] = function(list){
 
 const user = list.find(u=>u.id==id && u.pass==pass);
 
@@ -29,5 +26,9 @@ location.href="driver_start.html";
 }
 
 };
+
+const script = document.createElement("script");
+script.src = GAS + `?type=drivers&callback=${cb}&t=${Date.now()}`;
+document.body.appendChild(script);
 
 }
