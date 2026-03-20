@@ -1,5 +1,6 @@
 const GAS="https://script.google.com/macros/s/AKfycbxkgNmKdoeilTzXtelG_1VZNu8MHP0wxxkPNLaS-OY4Ix2V08bxJx7CyYMlozKyirLN/exec";
-
+let gpsLog = [];
+let gpsTimer = null;
 let init;
 
 window.onload = async ()=>{
@@ -137,6 +138,18 @@ startMeter:meter
 localStorage.setItem("lastCar",car);
 
 location.href="driver_arrival.html";
+// GPSログ開始
+gpsLog = [];
+
+gpsTimer = setInterval(()=>{
+navigator.geolocation.getCurrentPosition(pos=>{
+gpsLog.push({
+lat: pos.coords.latitude,
+lng: pos.coords.longitude
+});
+console.log("GPS:", pos.coords.latitude, pos.coords.longitude);
+});
+}, 30000); // 30秒ごと
 }
 
 // ---------------- 到着 ----------------
