@@ -5,7 +5,6 @@ function login(){
 const id = document.getElementById("id").value;
 const pass = document.getElementById("pass").value;
 
-// JSONP方式
 const script = document.createElement("script");
 
 script.src = GAS + "?type=drivers&callback=handleLogin";
@@ -13,6 +12,8 @@ script.src = GAS + "?type=drivers&callback=handleLogin";
 document.body.appendChild(script);
 
 window.handleLogin = function(list){
+
+console.log("取得:", list);
 
 const user = list.find(u=>u.id==id && u.pass==pass);
 
@@ -27,6 +28,10 @@ if(user.id==="admin"){
 location.href="admin.html";
 }else{
 location.href="driver_start.html";
+}
+
+};
+
 }
 
 };
