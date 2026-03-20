@@ -5,11 +5,14 @@ function login(){
 const id = document.getElementById("id").value;
 const pass = document.getElementById("pass").value;
 
-fetch(GAS+"?type=drivers")
-.then(r=>r.json())
-.then(list=>{
+// JSONP方式
+const script = document.createElement("script");
 
-console.log("drivers:", list);
+script.src = GAS + "?type=drivers&callback=handleLogin";
+
+document.body.appendChild(script);
+
+window.handleLogin = function(list){
 
 const user = list.find(u=>u.id==id && u.pass==pass);
 
@@ -20,17 +23,12 @@ return;
 
 localStorage.setItem("user",JSON.stringify(user));
 
-// 管理者分岐
 if(user.id==="admin"){
 location.href="admin.html";
 }else{
 location.href="driver_start.html";
 }
 
-})
-.catch(e=>{
-alert("通信エラー");
-console.error(e);
-});
+};
 
 }
