@@ -3,97 +3,15 @@
 <head>
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>到着</title>
-
-<style>
-*{
-box-sizing:border-box;
-}
-
-body{
-font-family:sans-serif;
-margin:0;
-padding:10px;
-background:#f5f5f5;
-}
-
-.card{
-background:#fff;
-padding:15px;
-margin:10px 0;
-border-radius:12px;
-box-shadow:0 2px 6px rgba(0,0,0,0.1);
-}
-
-h3{
-margin:5px 0;
-}
-
-input,select,button{
-width:100%;
-padding:12px;
-margin-top:8px;
-font-size:16px;
-border-radius:8px;
-border:1px solid #ccc;
-}
-
-button{
-background:#007bff;
-color:#fff;
-border:none;
-}
-
-.header{
-display:flex;
-justify-content:space-between;
-align-items:center;
-margin-bottom:10px;
-}
-</style>
 </head>
 
 <body>
 
-<div class="card">
-<h3>到着メーター（自動）</h3>
 <input id="endMeter" readonly>
-</div>
-
-<div class="card">
-<h3>同乗者</h3>
-
-<select id="group" onchange="changeGroup()">
-<option value="就労">就労</option>
-<option value="児童">児童</option>
-</select>
-
-<div id="passengerList"></div>
-
-<input id="passengers" placeholder="手入力可">
-</div>
-
-<div class="card">
-<h3>行先</h3>
-
-<select id="destination" onchange="checkDestination()"></select>
-
-<input id="destinationOther" placeholder="その他入力" style="display:none;">
-
-<h3>用件</h3>
-
-<select id="purpose" onchange="checkPurpose()"></select>
-
-<input id="purposeOther" placeholder="その他入力" style="display:none;">
-  
-
-
-<h3>備考</h3>
-<input id="memo">
-</div>
 
 <button onclick="arrival()">完了</button>
 
-<script src="driver.js?v=20260320"></script>
+<script src="driver.js?v=1"></script>
 
 </body>
 </html>
