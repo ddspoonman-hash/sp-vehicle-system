@@ -108,6 +108,26 @@ console.error("初期化エラー", e);
 alert("初期化失敗");
 }
 
+
+// ---------------- GPS開始（到着画面） ----------------
+if(document.getElementById("endMeter")){
+
+gpsLog = [];
+
+gpsTimer = setInterval(()=>{
+navigator.geolocation.getCurrentPosition(pos=>{
+
+gpsLog.push({
+lat: pos.coords.latitude,
+lng: pos.coords.longitude
+});
+
+console.log("GPS:", pos.coords.latitude, pos.coords.longitude);
+
+});
+}, 30000);
+
+}
 };
 
 // ---------------- 出発 ----------------
@@ -138,25 +158,7 @@ startMeter:meter
 localStorage.setItem("lastCar",car);
 
 location.href="driver_arrival.html";
-// GPSログ開始
-// GPSログ開始
-gpsLog = [];
 
-gpsTimer = setInterval(()=>{
-navigator.geolocation.getCurrentPosition(pos=>{
-
-gpsLog.push({
-lat: pos.coords.latitude,
-lng: pos.coords.longitude
-});
-
-// ★保存（これ追加）
-localStorage.setItem("gpsLog", JSON.stringify(gpsLog));
-
-console.log("GPS:", pos.coords.latitude, pos.coords.longitude);
-
-});
-}, 30000); // 30秒ごと
 }
 
 // ---------------- 到着 ----------------
