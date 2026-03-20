@@ -33,7 +33,3 @@ location.href="driver_start.html";
 };
 
 }
-
-};
-
-}
