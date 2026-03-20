@@ -139,15 +139,22 @@ localStorage.setItem("lastCar",car);
 
 location.href="driver_arrival.html";
 // GPSログ開始
+// GPSログ開始
 gpsLog = [];
 
 gpsTimer = setInterval(()=>{
 navigator.geolocation.getCurrentPosition(pos=>{
+
 gpsLog.push({
 lat: pos.coords.latitude,
 lng: pos.coords.longitude
 });
+
+// ★保存（これ追加）
+localStorage.setItem("gpsLog", JSON.stringify(gpsLog));
+
 console.log("GPS:", pos.coords.latitude, pos.coords.longitude);
+
 });
 }, 30000); // 30秒ごと
 }
@@ -155,11 +162,12 @@ console.log("GPS:", pos.coords.latitude, pos.coords.longitude);
 // ---------------- 到着 ----------------
 function arrival(){
 
+// ★追加（ここ超重要）
+gpsLog = JSON.parse(localStorage.getItem("gpsLog") || "[]");
+
 const endMeter = document.getElementById("endMeter").value;
 
-// ★デバッグ
 console.log("arrival押された");
-
 console.log("gpsLog:", gpsLog);
 
 fetch(GAS,{
@@ -181,6 +189,8 @@ console.error("送信エラー", err);
 
 alert("完了");
 location.href="driver_start.html";
+
+localStorage.removeItem("gpsLog");
 }
 // ---------------- ログアウト ----------------
 function logout(){
