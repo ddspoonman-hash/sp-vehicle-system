@@ -5,10 +5,10 @@ function login(){
 const id = document.getElementById("id").value;
 const pass = document.getElementById("pass").value;
 
-// 毎回ユニークcallback（キャッシュ完全回避）
-const cb = "cb_" + Date.now();
+// コールバック名を固定（←ここ重要）
+window.handleLogin = function(list){
 
-window[cb] = function(list){
+console.log("取得:", list);
 
 const user = list.find(u=>u.id==id && u.pass==pass);
 
@@ -27,8 +27,9 @@ location.href="driver_start.html";
 
 };
 
+// JSONP呼び出し
 const script = document.createElement("script");
-script.src = GAS + `?type=drivers&callback=${cb}&t=${Date.now()}`;
+script.src = GAS + "?type=drivers&callback=handleLogin&time=" + Date.now();
 document.body.appendChild(script);
 
 }
