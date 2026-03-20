@@ -5,29 +5,23 @@ function login(){
 const id = document.getElementById("id").value;
 const pass = document.getElementById("pass").value;
 
-// scriptタグで取得（CORS回避）
 const script = document.createElement("script");
 
-script.src = GAS + "?type=drivers&callback=handleLogin";
+script.src = GAS + "?type=drivers&callback=cb_login&t=" + Date.now();
 
 document.body.appendChild(script);
 
-// コールバック
-window.handleLogin = function(list){
-
-console.log("取得:", list);
+window.cb_login = function(list){
 
 const user = list.find(u=>u.id==id && u.pass==pass);
 
 if(!user){
-alert("IDまたはPASS違う");
+alert("ログイン失敗");
 return;
 }
 
-// 保存
 localStorage.setItem("user",JSON.stringify(user));
 
-// 遷移
 if(user.id==="admin"){
 location.href="admin.html";
 }else{
@@ -35,5 +29,4 @@ location.href="driver_start.html";
 }
 
 };
-
 }
