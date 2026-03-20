@@ -14,8 +14,75 @@ return;
 }
 
 // ---------------- init取得 ----------------
-const res = await fetch(GAS+"?type=init&time="+Date.now());
-init = await res.json();
+// ---------------- init取得（JSONP） ----------------
+function loadInit(){
+
+const script = document.createElement("script");
+script.src = GAS + "?type=init&callback=handleInit&time=" + Date.now();
+document.body.appendChild(script);
+
+window.handleInit = function(data){
+
+console.log("init:", data);
+
+init = data;
+
+// 安全チェック
+if(!init || !init.cars || !init.drivers){
+alert("初期データ取得失敗");
+return;
+}
+
+// ---------------- 運転者 ----------------
+const driver = document.getElementById("driverName");
+
+if(driver){
+driver.innerHTML="";
+
+const def = document.createElement("option");
+def.value="";
+def.textContent="運転者を選択";
+driver.appendChild(def);
+
+init.drivers.forEach(d=>{
+const o=document.createElement("option");
+o.value=d.name;
+o.textContent=`${d.name}（${d.dept}）`;
+driver.appendChild(o);
+});
+}
+
+// ---------------- 車両 ----------------
+const car = document.getElementById("car");
+
+if(car){
+car.innerHTML="";
+
+init.cars.forEach(c=>{
+const o=document.createElement("option");
+o.value=c;
+o.textContent=c;
+car.appendChild(o);
+});
+
+// メーター取得（ここは後で直す）
+car.onchange = ()=>{
+const script2 = document.createElement("script");
+script2.src = GAS + `?type=meter&car=${car.value}&callback=handleMeter`;
+document.body.appendChild(script2);
+};
+
+window.handleMeter = function(m){
+document.getElementById("meter").value = m;
+};
+
+car.dispatchEvent(new Event("change"));
+
+}
+
+};
+
+}
 
 console.log("init:", init);
 
