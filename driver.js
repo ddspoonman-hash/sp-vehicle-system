@@ -123,10 +123,7 @@ car.onchange = async ()=>{
 const res = await fetch(GAS+`?type=meter&car=${car.value}`);
 const m = await res.json();
 
-const meterInput = document.getElementById("meter");
-if(meterInput){
-meterInput.value = m;
-}
+document.getElementById("meter").value = m;
 
 };
 
