@@ -162,7 +162,8 @@ method:"POST",
 body:JSON.stringify({
 type:"arrival",
 car:localStorage.getItem("lastCar"),
-endMeter:endMeter
+endMeter:endMeter,
+gpsLog:gpsLog // ★追加
 })
 });
 
