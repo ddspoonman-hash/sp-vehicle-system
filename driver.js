@@ -157,20 +157,31 @@ function arrival(){
 
 const endMeter = document.getElementById("endMeter").value;
 
+// ★デバッグ
+console.log("arrival押された");
+
+console.log("gpsLog:", gpsLog);
+
 fetch(GAS,{
 method:"POST",
 body:JSON.stringify({
 type:"arrival",
 car:localStorage.getItem("lastCar"),
 endMeter:endMeter,
-gpsLog:gpsLog // ★追加
+gpsLog:gpsLog
 })
+})
+.then(r=>r.json())
+.then(res=>{
+console.log("GASレスポンス:", res);
+})
+.catch(err=>{
+console.error("送信エラー", err);
 });
 
 alert("完了");
 location.href="driver_start.html";
 }
-
 // ---------------- ログアウト ----------------
 function logout(){
 localStorage.clear();
