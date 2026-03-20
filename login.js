@@ -5,12 +5,14 @@ function login(){
 const id = document.getElementById("id").value;
 const pass = document.getElementById("pass").value;
 
+// scriptタグで取得（CORS回避）
 const script = document.createElement("script");
 
 script.src = GAS + "?type=drivers&callback=handleLogin";
 
 document.body.appendChild(script);
 
+// コールバック
 window.handleLogin = function(list){
 
 console.log("取得:", list);
@@ -22,8 +24,10 @@ alert("IDまたはPASS違う");
 return;
 }
 
+// 保存
 localStorage.setItem("user",JSON.stringify(user));
 
+// 遷移
 if(user.id==="admin"){
 location.href="admin.html";
 }else{
