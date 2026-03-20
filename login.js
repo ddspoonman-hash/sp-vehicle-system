@@ -5,10 +5,7 @@ function login(){
 const id = document.getElementById("id").value;
 const pass = document.getElementById("pass").value;
 
-// コールバック名を固定（←ここ重要）
 window.handleLogin = function(list){
-
-console.log("取得:", list);
 
 const user = list.find(u=>u.id==id && u.pass==pass);
 
@@ -19,17 +16,11 @@ return;
 
 localStorage.setItem("user",JSON.stringify(user));
 
-if(user.id==="admin"){
-location.href="admin.html";
-}else{
-location.href="driver_start.html";
-}
-
+location.href = user.id==="admin" ? "admin.html" : "driver_start.html";
 };
 
-// JSONP呼び出し
 const script = document.createElement("script");
-script.src = GAS + "?type=drivers&callback=handleLogin&time=" + Date.now();
+script.src = GAS + "?type=drivers&callback=handleLogin&t=" + Date.now();
 document.body.appendChild(script);
 
 }
