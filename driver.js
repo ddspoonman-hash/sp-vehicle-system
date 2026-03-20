@@ -123,7 +123,15 @@ car.onchange = async ()=>{
 const res = await fetch(GAS+`?type=meter&car=${car.value}`);
 const m = await res.json();
 
-document.getElementById("meter").value = m;
+console.log("meter:", m); // ← これ追加（デバッグ）
+
+const meterInput = document.getElementById("meter");
+
+if(meterInput){
+meterInput.value = m;
+}else{
+console.error("meter要素が見つからない");
+}
 
 };
 
