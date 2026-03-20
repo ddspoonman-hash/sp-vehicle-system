@@ -1,18 +1,18 @@
 const GAS="https://script.google.com/macros/s/AKfycbwbMFxKiQlT_hpb_iNjljeEvKZ7LMr9q8i2KpdW6iWrO6d3pv40iun7SLRTFAstn9C5/exec";
 
-let gpsTimer = null;
-
-// JSONP
-function jsonp(url, cb){
+function jsonp(url){
 return new Promise(res=>{
-window[cb]=data=>res(data);
+const cb = "cb_" + Date.now();
+window[cb]=data=>{
+res(data);
+delete window[cb];
+};
 const s=document.createElement("script");
 s.src=url+"&callback="+cb+"&t="+Date.now();
 document.body.appendChild(s);
 });
 }
 
-// 初期化
 window.onload = async ()=>{
 
 const user = JSON.parse(localStorage.getItem("user"));
@@ -34,10 +34,10 @@ loadEndMeter();
 
 };
 
-// 出発画面初期化
+// ---------------- 出発 ----------------
 async function initStart(){
 
-const data = await jsonp(GAS+"?type=init","cb_init");
+const data = await jsonp(GAS+"?type=init");
 
 const car = document.getElementById("car");
 const driver = document.getElementById("driverName");
@@ -59,42 +59,36 @@ car.appendChild(o);
 });
 
 car.onchange = async ()=>{
-const m = await jsonp(GAS+`?type=meter&car=${car.value}`,"cb_meter");
+const m = await jsonp(GAS+`?type=meter&car=${car.value}`);
 document.getElementById("meter").value = m;
 };
 
 car.dispatchEvent(new Event("change"));
-
 }
 
-// 出発
 function start(){
 
 const user = JSON.parse(localStorage.getItem("user"));
 
 const car = document.getElementById("car").value;
 const driver = document.getElementById("driverName").value;
+const meter = document.getElementById("meter").value;
 
-jsonp(
-GAS+`?type=start&car=${car}&driver=${driver}&dept=${user.dept}&startMeter=0`,
-"cb_start"
-);
+jsonp(GAS+`?type=start&car=${car}&driver=${driver}&dept=${user.dept}&startMeter=${meter}`);
 
 localStorage.setItem("lastCar",car);
-
 location.href="driver_arrival.html";
-
 }
 
-// GPS
+// ---------------- GPS ----------------
 function startGPS(){
 
 localStorage.setItem("gpsLog","[]");
 
-gpsTimer=setInterval(()=>{
+setInterval(()=>{
 navigator.geolocation.getCurrentPosition(pos=>{
 
-const log=JSON.parse(localStorage.getItem("gpsLog"));
+const log = JSON.parse(localStorage.getItem("gpsLog"));
 
 log.push({
 lat:pos.coords.latitude,
@@ -105,21 +99,17 @@ localStorage.setItem("gpsLog",JSON.stringify(log));
 
 });
 },30000);
-
 }
 
-// メーター
+// ---------------- 到着 ----------------
 async function loadEndMeter(){
 
 const car = localStorage.getItem("lastCar");
-
-const m = await jsonp(GAS+`?type=meter&car=${car}`,"cb_meter2");
+const m = await jsonp(GAS+`?type=meter&car=${car}`);
 
 document.getElementById("endMeter").value = m;
-
 }
 
-// 到着
 function arrival(){
 
 const gpsLog = JSON.parse(localStorage.getItem("gpsLog") || "[]");
@@ -127,19 +117,18 @@ const car = localStorage.getItem("lastCar");
 const endMeter = document.getElementById("endMeter").value;
 
 jsonp(
-GAS+`?type=arrival&car=${car}&endMeter=${endMeter}&gpsLog=${encodeURIComponent(JSON.stringify(gpsLog))}`,
-"cb_arrival"
+GAS+`?type=arrival`
++`&car=${car}`
++`&endMeter=${endMeter}`
++`&gpsLog=${encodeURIComponent(JSON.stringify(gpsLog))}`
 );
 
 localStorage.removeItem("gpsLog");
 
 alert("完了");
-
 location.href="driver_start.html";
-
 }
 
-// logout
 function logout(){
 localStorage.clear();
 location.href="index.html";
