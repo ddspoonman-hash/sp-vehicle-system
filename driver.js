@@ -31,9 +31,7 @@ startGPS();
 loadEndMeter();
 }
 
-if(document.getElementById("passengerList")){
-  initArrival();
-}
+
 };
 
 // 出発初期化
