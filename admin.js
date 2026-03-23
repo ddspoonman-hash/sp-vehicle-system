@@ -124,12 +124,12 @@ pGroup.appendChild(o);
 
 }
 
-window.onload=()=>{
-initMap();
-load();
-loadGroups(); // ←これ追加
-loadCarsForCSV(); // ←追加
-setInterval(load,5000);
+window.onload = ()=>{
+  initMap();
+  load();
+  loadCarsForCSV(); // ←絶対必要
+  loadGroups();     // ←あるなら
+  setInterval(load,5000);
 };
 
 function downloadCSV(){
