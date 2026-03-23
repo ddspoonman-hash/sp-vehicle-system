@@ -73,6 +73,15 @@ margin-bottom:10px;
 <button onclick="downloadCarCSV()">ダウンロード</button>
 </div>
 <div class="card">
+<h3>車両別 月次CSV</h3>
+
+<select id="csvCarMonth"></select>
+
+<input type="month" id="csvMonth">
+
+<button onclick="downloadCarMonthCSV()">ダウンロード</button>
+</div>
+<div class="card">
 <h3>車両追加</h3>
 <input id="newCar" placeholder="車両名">
 <button onclick="addCar()">追加</button>
