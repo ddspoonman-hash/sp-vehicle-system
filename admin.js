@@ -58,7 +58,11 @@ markers.push(marker);
 // CSV用 車両リスト ←ここに追加
 async function loadCarsForCSV(){
 
+try{
+
 const data = await jsonp(GAS+"?type=init");
+
+console.log("cars:", data.cars); // ←デバッグ
 
 const select = document.getElementById("csvCar");
 select.innerHTML="";
@@ -69,6 +73,11 @@ o.value=c;
 o.textContent=c;
 select.appendChild(o);
 });
+
+}catch(e){
+console.error("CSV車両エラー", e);
+alert("車両取得エラー");
+}
 
 }
 
