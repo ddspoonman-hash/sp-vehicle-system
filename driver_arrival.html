@@ -14,16 +14,92 @@
 
 <div class="status running">走行中</div>
 
+<h3>運転者</h3>
+<select id="driverSelect"></select>
+
+<h3>同乗者（複数）</h3>
+<input id="passengers" placeholder="例：田中,佐藤">
+
+<h3>行き先（複数）</h3>
+<input id="destinations" placeholder="例：病院,市役所">
+
+<h3>用件（複数）</h3>
+<input id="purposes" placeholder="例：送迎,通院">
+
+<h3>備考</h3>
+<input id="memo" placeholder="自由入力">
+
 <h3>到着メーター</h3>
 <input id="endMeter" readonly>
 
 </div>
 
 <div class="fixed-btn">
-<button class="btn-danger" onclick="arrival()">到着</button>
+<button class="btn-danger" onclick="arrivalEx()">到着</button>
 </div>
 
 <script src="driver.js"></script>
+
+<script>
+
+// 初期化拡張
+window.addEventListener("load", async ()=>{
+
+const user = JSON.parse(localStorage.getItem("user"));
+
+// driver一覧取得
+const data = await jsonp(GAS+"?type=drivers");
+
+const sel = document.getElementById("driverSelect");
+
+data.forEach(d=>{
+const o=document.createElement("option");
+o.value=d.name;
+o.textContent=d.name;
+if(d.name===user.name) o.selected=true;
+sel.appendChild(o);
+});
+
+});
+
+// 拡張到着処理
+function arrivalEx(){
+
+const gpsLog = JSON.parse(localStorage.getItem("gpsLog") || "[]");
+const car = localStorage.getItem("lastCar");
+const endMeter = document.getElementById("endMeter").value;
+
+const driver = driverSelect.value;
+const passengers = passengers.value;
+const destinations = destinations.value;
+const purposes = purposes.value;
+const memo = memo.value;
+
+const script = document.createElement("script");
+
+script.src =
+GAS + `?type=arrivalEx`
++ `&car=${encodeURIComponent(car)}`
++ `&endMeter=${endMeter}`
++ `&gpsLog=${encodeURIComponent(JSON.stringify(gpsLog))}`
++ `&driver=${encodeURIComponent(driver)}`
++ `&passengers=${encodeURIComponent(passengers)}`
++ `&destinations=${encodeURIComponent(destinations)}`
++ `&purposes=${encodeURIComponent(purposes)}`
++ `&memo=${encodeURIComponent(memo)}`
++ `&callback=cb_arrival`
++ `&t=${Date.now()}`;
+
+document.body.appendChild(script);
+
+localStorage.removeItem("gpsLog");
+
+alert("完了");
+
+location.href="driver_start.html";
+}
+
+</script>
 
 </body>
 </html>
