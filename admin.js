@@ -128,9 +128,11 @@ window.open(GAS+"?type=csv");
 }
 
 function downloadCarCSV(){
-const car=prompt("車両名入力");
-if(!car)return;
-window.open(GAS+`?type=csvCar&car=${car}`);
+
+const car = document.getElementById("csvCar").value;
+
+window.open(GAS+`?type=csvCar&car=${encodeURIComponent(car)}`);
+
 }
 function logout(){
   localStorage.clear();
