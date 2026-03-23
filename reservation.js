@@ -73,3 +73,8 @@ window.onload=()=>{
 load();
 initCars();
 };
+
+function logout(){
+  localStorage.clear();
+  location.href = "index.html";
+}
