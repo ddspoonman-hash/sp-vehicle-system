@@ -30,8 +30,6 @@ if(document.getElementById("endMeter")){
 startGPS();
 loadEndMeter();
 }
-
-
 };
 
 // 出発初期化
@@ -119,50 +117,8 @@ const m = await jsonp(GAS+`?type=meter&car=${encodeURIComponent(car)}`);
 document.getElementById("endMeter").value = m;
 }
 
-// 到着
-function arrival(){
-
-const gpsLog = JSON.parse(localStorage.getItem("gpsLog") || "[]");
-const car = localStorage.getItem("lastCar");
-const endMeter = document.getElementById("endMeter").value;
-
-const script = document.createElement("script");
-
-script.src =
-GAS + `?type=arrival`
-+ `&car=${encodeURIComponent(car)}`
-+ `&endMeter=${endMeter}`
-+ `&gpsLog=${encodeURIComponent(JSON.stringify(gpsLog))}`
-+ `&callback=cb_arrival`
-+ `&t=${Date.now()}`;
-
-document.body.appendChild(script);
-
-localStorage.removeItem("gpsLog");
-
-alert("完了");
-
-location.href="driver_start.html";
-}
-
+// ログアウト
 function logout(){
-  localStorage.clear();
-  location.href = "index.html";
+localStorage.clear();
+location.href="index.html";
 }
-
-
-
-// 初期化（到着画面用）
-
-
-// 初期表示
-renderPassengers(groups[0]);
-
-groupSelect.onchange = ()=>{
-renderPassengers(groupSelect.value);
-};
-
-}
-
-
-
