@@ -97,3 +97,7 @@ const car=prompt("車両名入力");
 if(!car)return;
 window.open(GAS+`?type=csvCar&car=${car}`);
 }
+function logout(){
+  localStorage.clear();
+  location.href = "index.html";
+}
