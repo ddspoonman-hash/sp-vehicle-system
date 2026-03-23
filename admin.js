@@ -1,122 +1,99 @@
 const GAS="https://script.google.com/macros/s/AKfycbwbMFxKiQlT_hpb_iNjljeEvKZ7LMr9q8i2KpdW6iWrO6d3pv40iun7SLRTFAstn9C5/exec";
 
-let map;
-let markers = [];
-
-// 初期化（1回だけ）
-function initMap(){
-  map = new google.maps.Map(document.getElementById("map"),{
-    zoom:12,
-    center:{lat:35.0,lng:136.0}
-  });
+// JSONP共通
+function jsonp(url){
+return new Promise(res=>{
+const cb="cb_"+Date.now();
+window[cb]=data=>{
+res(data);
+delete window[cb];
+};
+const s=document.createElement("script");
+s.src=url+"&callback="+cb+"&t="+Date.now();
+document.body.appendChild(s);
+});
 }
 
-// データロード（更新用）
+let map;
+let markers=[];
+
+function initMap(){
+map=new google.maps.Map(document.getElementById("map"),{
+zoom:12,
+center:{lat:35.0,lng:136.0}
+});
+}
+
 async function load(){
 
-  const data = await fetch(GAS+"?type=init").then(r=>r.json());
+const data = await jsonp(GAS+"?type=init");
 
-  // ---------------- 一覧 ----------------
-  const div = document.getElementById("running");
-  div.innerHTML="";
+const div=document.getElementById("running");
+div.innerHTML="";
 
-  data.running.forEach(r=>{
-    div.innerHTML += `
-    車両：${r.car}<br>
-    運転者：${r.driver}<br>
-    <hr>
-    `;
-  });
+data.running.forEach(r=>{
+div.innerHTML+=`
+車両：${r.car}<br>
+運転者：${r.driver}<hr>
+`;
+});
 
-  // ---------------- マーカー更新 ----------------
+// マーカー更新
+markers.forEach(m=>m.setMap(null));
+markers=[];
 
-  // 古いマーカー削除
-  markers.forEach(m=>m.setMap(null));
-  markers=[];
+data.running.forEach(r=>{
+if(!r.lat||!r.lng)return;
 
-  data.running.forEach(r=>{
+const marker=new google.maps.Marker({
+position:{lat:Number(r.lat),lng:Number(r.lng)},
+map:map,
+title:r.car+" "+r.driver
+});
 
-    // lat/lng無い場合スキップ
-    if(!r.lat || !r.lng) return;
-
-    const marker = new google.maps.Marker({
-      position:{
-        lat:Number(r.lat),
-        lng:Number(r.lng)
-      },
-      map:map,
-      title:r.car+" "+r.driver
-    });
-
-    markers.push(marker);
-
-  });
-
+markers.push(marker);
+});
 }
 
-// ---------------- 車両追加 ----------------
-function addCar(){
-fetch(GAS,{
-method:"POST",
-body:JSON.stringify({
-type:"addCar",
-car:document.getElementById("newCar").value
-})
-});
+// 車両追加
+async function addCar(){
+await jsonp(GAS+`?type=addCar&car=${encodeURIComponent(newCar.value)}`);
 alert("追加OK");
 load();
 }
 
-// ---------------- ドライバー追加 ----------------
-function addDriver(){
-fetch(GAS,{
-method:"POST",
-body:JSON.stringify({
-type:"addDriver",
-id:document.getElementById("newId").value,
-name:document.getElementById("newName").value,
-dept:document.getElementById("newDept").value,
-pass:document.getElementById("newPass").value
-})
-});
+// ドライバー追加
+async function addDriver(){
+await jsonp(GAS+`?type=addDriver`
++`&id=${newId.value}`
++`&name=${newName.value}`
++`&dept=${newDept.value}`
++`&pass=${newPass.value}`);
 alert("追加OK");
 load();
 }
 
-// ---------------- メーター補正 ----------------
-function fixMeter(){
-fetch(GAS,{
-method:"POST",
-body:JSON.stringify({
-type:"fixMeter",
-car:document.getElementById("fixCar").value,
-meter:document.getElementById("fixMeter").value
-})
-});
+// メーター補正
+async function fixMeter(){
+await jsonp(GAS+`?type=fixMeter`
++`&car=${fixCar.value}`
++`&meter=${fixMeter.value}`);
 alert("更新OK");
 load();
 }
 
-// 初期処理
-window.onload = ()=>{
-  initMap();
-  load();
-
-  // 自動更新（5秒）
-  setInterval(load,5000);
+window.onload=()=>{
+initMap();
+load();
+setInterval(load,5000);
 };
 
 function downloadCSV(){
-  window.open(GAS+"?type=csv");
+window.open(GAS+"?type=csv");
 }
 
-
 function downloadCarCSV(){
-
-const car = prompt("車両名入力");
-
-if(!car) return;
-
+const car=prompt("車両名入力");
+if(!car)return;
 window.open(GAS+`?type=csvCar&car=${car}`);
-
 }
