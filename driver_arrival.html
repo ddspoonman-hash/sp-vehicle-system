@@ -4,6 +4,32 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>到着</title>
 <link rel="stylesheet" href="style.css">
+
+<style>
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px;}
+.chip{
+padding:10px 14px;
+background:#eee;
+border-radius:20px;
+font-size:14px;
+}
+.chip.active{
+background:#007bff;
+color:#fff;
+}
+.tab{
+display:inline-block;
+padding:8px 12px;
+margin-right:6px;
+background:#ddd;
+border-radius:10px;
+}
+.tab.active{
+background:#007bff;
+color:#fff;
+}
+</style>
+
 </head>
 
 <body>
@@ -12,22 +38,24 @@
 
 <div class="card">
 
-<div class="status running">走行中</div>
-
 <h3>運転者</h3>
 <select id="driverSelect"></select>
 
-<h3>同乗者（複数）</h3>
-<input id="passengers" placeholder="例：田中,佐藤">
+<h3>同乗者</h3>
+<div id="groupTabs"></div>
+<div id="passengerList" class="chips"></div>
+<input id="passengerOther" placeholder="その他">
 
-<h3>行き先（複数）</h3>
-<input id="destinations" placeholder="例：病院,市役所">
+<h3>行き先</h3>
+<div id="destList" class="chips"></div>
+<input id="destOther" placeholder="その他">
 
-<h3>用件（複数）</h3>
-<input id="purposes" placeholder="例：送迎,通院">
+<h3>用件</h3>
+<div id="purposeList" class="chips"></div>
+<input id="purposeOther" placeholder="その他">
 
 <h3>備考</h3>
-<input id="memo" placeholder="自由入力">
+<input id="memo">
 
 <h3>到着メーター</h3>
 <input id="endMeter" readonly>
@@ -42,60 +70,115 @@
 
 <script>
 
-// 初期化拡張
+let selectedPassengers = [];
+let selectedDest = [];
+let selectedPurpose = [];
+let allPassengers = [];
+
+// 初期化
 window.addEventListener("load", async ()=>{
 
 const user = JSON.parse(localStorage.getItem("user"));
 
-// driver一覧取得
-const data = await jsonp(GAS+"?type=drivers");
-
-const sel = document.getElementById("driverSelect");
-
-data.forEach(d=>{
+// driver
+const d = await jsonp(GAS+"?type=drivers");
+d.forEach(x=>{
 const o=document.createElement("option");
-o.value=d.name;
-o.textContent=d.name;
-if(d.name===user.name) o.selected=true;
-sel.appendChild(o);
+o.value=x.name;
+o.textContent=x.name;
+if(x.name===user.name) o.selected=true;
+driverSelect.appendChild(o);
+});
+
+// masters
+const m = await jsonp(GAS+"?type=masters");
+
+allPassengers = m.passengers;
+
+// グループ抽出
+const groups = [...new Set(m.passengers.map(x=>x.group))];
+
+groups.forEach((g,i)=>{
+const tab=document.createElement("span");
+tab.className="tab";
+tab.textContent=g;
+tab.onclick=()=>{
+document.querySelectorAll(".tab").forEach(t=>t.classList.remove("active"));
+tab.classList.add("active");
+renderPassengers(g);
+};
+if(i==0){tab.classList.add("active"); renderPassengers(g);}
+groupTabs.appendChild(tab);
+});
+
+// 行き先
+m.destinations.forEach(x=>{
+createChip(x,destList,selectedDest);
+});
+
+// 用件
+m.purposes.forEach(x=>{
+createChip(x,purposeList,selectedPurpose);
 });
 
 });
 
-// 拡張到着処理
+// 同乗者描画
+function renderPassengers(group){
+passengerList.innerHTML="";
+allPassengers.filter(x=>x.group==group).forEach(x=>{
+createChip(x.name,passengerList,selectedPassengers);
+});
+}
+
+// 汎用チップ
+function createChip(text,container,arr){
+const div=document.createElement("div");
+div.className="chip";
+div.textContent=text;
+
+div.onclick=()=>{
+if(arr.includes(text)){
+arr.splice(arr.indexOf(text),1);
+div.classList.remove("active");
+}else{
+arr.push(text);
+div.classList.add("active");
+}
+};
+
+container.appendChild(div);
+}
+
+// 到着
 function arrivalEx(){
 
-const gpsLog = JSON.parse(localStorage.getItem("gpsLog") || "[]");
+const gpsLog = JSON.parse(localStorage.getItem("gpsLog")||"[]");
 const car = localStorage.getItem("lastCar");
-const endMeter = document.getElementById("endMeter").value;
 
-const driver = driverSelect.value;
-const passengers = passengers.value;
-const destinations = destinations.value;
-const purposes = purposes.value;
-const memo = memo.value;
+const passengers = [...selectedPassengers, passengerOther.value].filter(Boolean).join(",");
+const dest = [...selectedDest, destOther.value].filter(Boolean).join(",");
+const purpose = [...selectedPurpose, purposeOther.value].filter(Boolean).join(",");
 
-const script = document.createElement("script");
+const script=document.createElement("script");
 
 script.src =
-GAS + `?type=arrivalEx`
-+ `&car=${encodeURIComponent(car)}`
-+ `&endMeter=${endMeter}`
-+ `&gpsLog=${encodeURIComponent(JSON.stringify(gpsLog))}`
-+ `&driver=${encodeURIComponent(driver)}`
-+ `&passengers=${encodeURIComponent(passengers)}`
-+ `&destinations=${encodeURIComponent(destinations)}`
-+ `&purposes=${encodeURIComponent(purposes)}`
-+ `&memo=${encodeURIComponent(memo)}`
-+ `&callback=cb_arrival`
-+ `&t=${Date.now()}`;
+GAS+`?type=arrivalEx`
++`&car=${car}`
++`&gpsLog=${encodeURIComponent(JSON.stringify(gpsLog))}`
++`&driver=${driverSelect.value}`
++`&passengers=${encodeURIComponent(passengers)}`
++`&destinations=${encodeURIComponent(dest)}`
++`&purposes=${encodeURIComponent(purpose)}`
++`&memo=${memo.value}`
++`&callback=cb_arrival`
++`&t=${Date.now()}`;
 
 document.body.appendChild(script);
 
 localStorage.removeItem("gpsLog");
 
 alert("完了");
-
 location.href="driver_start.html";
 }
 
