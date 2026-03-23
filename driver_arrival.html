@@ -125,10 +125,35 @@ createChip(x,purposeList,selectedPurpose);
 
 // 同乗者描画
 function renderPassengers(group){
+
 passengerList.innerHTML="";
-allPassengers.filter(x=>x.group==group).forEach(x=>{
-createChip(x.name,passengerList,selectedPassengers);
-});
+
+allPassengers
+  .filter(x=>x.group==group)
+  .forEach(x=>{
+
+    const div=document.createElement("div");
+    div.className="chip";
+    div.textContent=x.name;
+
+    // ★ここが重要（選択状態復元）
+    if(selectedPassengers.includes(x.name)){
+      div.classList.add("active");
+    }
+
+    div.onclick=()=>{
+      if(selectedPassengers.includes(x.name)){
+        selectedPassengers.splice(selectedPassengers.indexOf(x.name),1);
+        div.classList.remove("active");
+      }else{
+        selectedPassengers.push(x.name);
+        div.classList.add("active");
+      }
+    };
+
+    passengerList.appendChild(div);
+
+  });
 }
 
 // 汎用チップ
