@@ -101,3 +101,36 @@ function logout(){
   localStorage.clear();
   location.href = "index.html";
 }
+
+
+// 同乗者追加
+async function addPassenger(){
+await jsonp(
+GAS+`?type=addPassenger`
++`&group=${pGroup.value}`
++`&name=${pName.value}`
+);
+alert("追加OK");
+pGroup.value="";
+pName.value="";
+}
+
+// 行き先
+async function addDestination(){
+await jsonp(
+GAS+`?type=addDestination`
++`&name=${dName.value}`
+);
+alert("追加OK");
+dName.value="";
+}
+
+// 用件
+async function addPurpose(){
+await jsonp(
+GAS+`?type=addPurpose`
++`&name=${uName.value}`
+);
+alert("追加OK");
+uName.value="";
+}
