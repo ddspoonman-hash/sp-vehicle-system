@@ -55,6 +55,23 @@ markers.push(marker);
 });
 }
 
+// CSV用 車両リスト ←ここに追加
+async function loadCarsForCSV(){
+
+const data = await jsonp(GAS+"?type=init");
+
+const select = document.getElementById("csvCar");
+select.innerHTML="";
+
+data.cars.forEach(c=>{
+const o=document.createElement("option");
+o.value=c;
+o.textContent=c;
+select.appendChild(o);
+});
+
+}
+
 // 車両追加
 async function addCar(){
 await jsonp(GAS+`?type=addCar&car=${encodeURIComponent(newCar.value)}`);
@@ -102,6 +119,7 @@ window.onload=()=>{
 initMap();
 load();
 loadGroups(); // ←これ追加
+loadCarsForCSV(); // ←追加
 setInterval(load,5000);
 };
 
