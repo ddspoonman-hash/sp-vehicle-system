@@ -69,11 +69,12 @@ markers.push(marker);
 // CSV用 車両リスト ←ここに追加
 async function loadCarsForCSV(){
 
-try{
-
 const data = await jsonp(GAS+"?type=init");
 
-console.log("cars:", data.cars); // ←デバッグ
+if(!data || !data.cars){
+alert("車両データ取得失敗");
+return;
+}
 
 const select = document.getElementById("csvCar");
 select.innerHTML="";
@@ -85,13 +86,7 @@ o.textContent=c;
 select.appendChild(o);
 });
 
-}catch(e){
-console.error("CSV車両エラー", e);
-alert("車両取得エラー");
 }
-
-}
-
 // 車両追加
 async function addCar(){
 await jsonp(GAS+`?type=addCar&car=${encodeURIComponent(newCar.value)}`);
