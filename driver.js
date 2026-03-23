@@ -142,3 +142,8 @@ alert("完了");
 
 location.href="driver_start.html";
 }
+
+function logout(){
+  localStorage.clear();
+  location.href = "index.html";
+}
