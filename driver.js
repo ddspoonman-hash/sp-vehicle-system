@@ -1,5 +1,5 @@
 const GAS="https://script.google.com/macros/s/AKfycbwbMFxKiQlT_hpb_iNjljeEvKZ7LMr9q8i2KpdW6iWrO6d3pv40iun7SLRTFAstn9C5/exec";
-let selectedPassengers = [];
+
 // JSONP
 function jsonp(url){
 return new Promise(res=>{
