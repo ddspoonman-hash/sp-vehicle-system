@@ -133,8 +133,9 @@ pGroup.appendChild(o);
 window.onload = ()=>{
   initMap();
   load();
-  loadCarsForCSV(); // ←絶対必要
-  loadGroups();     // ←あるなら
+  loadCarsForCSV();
+  loadCarsForCSVMonth(); // ←追加
+  loadGroups();
   setInterval(load,5000);
 };
 
@@ -185,4 +186,37 @@ GAS+`?type=addPurpose`
 );
 alert("追加OK");
 uName.value="";
+}
+
+
+async function loadCarsForCSVMonth(){
+
+const data = await jsonp(GAS+"?type=init");
+
+const select = document.getElementById("csvCarMonth");
+select.innerHTML="";
+
+data.cars.forEach(c=>{
+const o=document.createElement("option");
+o.value=c;
+o.textContent=c;
+select.appendChild(o);
+});
+
+}
+
+function downloadCarMonthCSV(){
+
+const car = document.getElementById("csvCarMonth").value;
+const month = document.getElementById("csvMonth").value;
+
+if(!month){
+alert("月を選択してください");
+return;
+}
+
+window.open(
+GAS+`?type=csvCarMonth&car=${encodeURIComponent(car)}&month=${month}`
+);
+
 }
