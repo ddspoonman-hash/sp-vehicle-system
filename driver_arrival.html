@@ -133,9 +133,15 @@ createChip(x.name,passengerList,selectedPassengers);
 
 // 汎用チップ
 function createChip(text,container,arr){
+
 const div=document.createElement("div");
 div.className="chip";
 div.textContent=text;
+
+// ★これ追加（重要）
+if(arr.includes(text)){
+div.classList.add("active");
+}
 
 div.onclick=()=>{
 if(arr.includes(text)){
