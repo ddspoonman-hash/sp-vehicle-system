@@ -30,6 +30,10 @@ if(document.getElementById("endMeter")){
 startGPS();
 loadEndMeter();
 }
+
+if(document.getElementById("passengerList")){
+  initArrival();
+}
 };
 
 // 出発初期化
@@ -147,3 +151,66 @@ function logout(){
   localStorage.clear();
   location.href = "index.html";
 }
+
+
+let passengers = [];
+
+// 初期化（到着画面用）
+async function initArrival(){
+
+const data = await jsonp(GAS+"?type=masters");
+
+passengers = data.passengers;
+
+const groupSelect = document.getElementById("pGroup");
+
+// グループ一覧
+const groups = [...new Set(passengers.map(p=>p.group))];
+
+groupSelect.innerHTML="";
+
+groups.forEach(g=>{
+const o=document.createElement("option");
+o.value=g;
+o.textContent=g;
+groupSelect.appendChild(o);
+});
+
+// 初期表示
+renderPassengers(groups[0]);
+
+groupSelect.onchange = ()=>{
+renderPassengers(groupSelect.value);
+};
+
+}
+
+function renderPassengers(group){
+
+const container = document.getElementById("passengerList");
+
+// 現在の選択を保存
+const checks = container.querySelectorAll("input[type=checkbox]");
+selectedPassengers = Array.from(checks)
+  .filter(c=>c.checked)
+  .map(c=>c.value);
+
+// 再描画
+container.innerHTML="";
+
+passengers
+  .filter(p=>p.group===group)
+  .forEach(p=>{
+
+    const checked = selectedPassengers.includes(p.name) ? "checked" : "";
+
+    container.innerHTML += `
+    <label>
+      <input type="checkbox" value="${p.name}" ${checked}>
+      ${p.name}
+    </label><br>
+    `;
+  });
+
+}
+
