@@ -3,19 +3,17 @@
 <head>
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>出発</title>
-
-<style>
-body{font-family:sans-serif;background:#f5f5f5;padding:10px;}
-.card{background:#fff;padding:15px;margin:10px 0;border-radius:12px;}
-input,select,button{width:100%;padding:12px;margin-top:8px;}
-button{background:#007bff;color:#fff;border:none;}
-</style>
-
+<link rel="stylesheet" href="style.css">
 </head>
 
 <body>
 
+<div class="header">出発</div>
+
 <div class="card">
+
+<div class="status idle">待機中</div>
+
 <h3>運転者</h3>
 <select id="driverName"></select>
 
@@ -24,9 +22,12 @@ button{background:#007bff;color:#fff;border:none;}
 
 <h3>メーター</h3>
 <input id="meter" readonly>
+
 </div>
 
+<div class="fixed-btn">
 <button onclick="start()">出発</button>
+</div>
 
 <script src="driver.js"></script>
 
