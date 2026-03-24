@@ -130,11 +130,28 @@ select.appendChild(o);
 
 }
 
+async function loadCarsForCSVMonth(){
+
+const data = await jsonp(GAS+"?type=init");
+
+const select = document.getElementById("csvCarMonth");
+select.innerHTML="";
+
+data.cars.forEach(c=>{
+const o=document.createElement("option");
+o.value=c;
+o.textContent=c;
+select.appendChild(o);
+});
+
+}
+
 window.onload = ()=>{
   initMap();
   load();
-  loadGroups(); // ←これも追加
   loadCarsForCSV();
+  loadCarsForCSVMonth(); // ←追加
+  loadGroups();
   setInterval(load,5000);
 };
 
