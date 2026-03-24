@@ -5,6 +5,7 @@ function login(){
   const pass = document.getElementById("pass").value;
 
   window.handleLogin = function(list){
+
     const user = list.find(u=>u.id==id && u.pass==pass);
 
     if(!user){
@@ -13,7 +14,13 @@ function login(){
     }
 
     localStorage.setItem("user",JSON.stringify(user));
-    location.href="driver_start.html";
+
+    // ⭐ 管理者判定（修正）
+    if(String(user.id).toLowerCase() === "admin"){
+      location.href="admin.html";
+    }else{
+      location.href="driver_start.html";
+    }
   };
 
   const script = document.createElement("script");
