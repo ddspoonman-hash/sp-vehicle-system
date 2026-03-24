@@ -2,29 +2,34 @@
 <html>
 <head>
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<meta http-equiv="Cache-Control" content="no-store">
 <title>出発</title>
 <link rel="stylesheet" href="style.css">
 </head>
+
 <body>
 
 <div class="header">出発</div>
 
 <div class="card">
-  <h3>運転者</h3>
-  <select id="driverName"></select>
 
-  <h3>車両</h3>
-  <select id="car"></select>
+<div class="status idle">待機中</div>
 
-  <h3>メーター</h3>
-  <input id="meter" readonly>
+<h3>運転者</h3>
+<select id="driverName"></select>
+
+<h3>車両</h3>
+<select id="car"></select>
+
+<h3>メーター</h3>
+<input id="meter" readonly>
+
 </div>
 
-<div class="card">
-  <button onclick="start()">出発</button>
+<div class="fixed-btn">
+<button onclick="start()">出発</button>
 </div>
 
-<script src="driver.js?v=20260324"></script>
+<script src="driver.js"></script>
+
 </body>
 </html>
