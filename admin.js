@@ -86,9 +86,16 @@ load();
 
 // メーター補正
 async function fixMeter(){
-await jsonp(GAS+`?type=fixMeter`
-+`&car=${fixCar.value}`
-+`&meter=${fixMeter.value}`);
+
+const car = document.getElementById("fixCar").value;
+const meter = document.getElementById("fixMeter").value;
+
+await jsonp(
+GAS+`?type=fixMeter`
++`&car=${car}`
++`&meter=${meter}`
+);
+
 alert("更新OK");
 load();
 }
