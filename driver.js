@@ -2,123 +2,129 @@ const GAS="https://script.google.com/macros/s/AKfycbwbMFxKiQlT_hpb_iNjljeEvKZ7LM
 
 // JSONP
 function jsonp(url){
-return new Promise(res=>{
-const cb = "cb_" + Date.now();
-window[cb]=data=>{
-res(data);
-delete window[cb];
-};
-const s=document.createElement("script");
-s.src=url+"&callback="+cb+"&t="+Date.now();
-document.body.appendChild(s);
-});
+  return new Promise(res=>{
+    const cb = "cb_" + Date.now();
+    window[cb]=data=>{
+      res(data);
+      delete window[cb];
+    };
+    const s=document.createElement("script");
+    s.src=url+"&callback="+cb+"&t="+Date.now();
+    document.body.appendChild(s);
+  });
 }
 
+// 初期化
 window.onload = async ()=>{
+  const user = JSON.parse(localStorage.getItem("user"));
+  if(!user){
+    location.href="index.html";
+    return;
+  }
 
-const user = JSON.parse(localStorage.getItem("user"));
-if(!user){
-location.href="index.html";
-return;
-}
+  if(document.getElementById("car")){
+    initStart();
+  }
 
-if(document.getElementById("car")){
-initStart();
-}
-
-if(document.getElementById("endMeter")){
-startGPS();
-loadEndMeter();
-}
+  if(document.getElementById("endMeter")){
+    startGPS();
+    loadEndMeter();
+  }
 };
 
 // 出発初期化
 async function initStart(){
+  const data = await jsonp(GAS+"?type=init");
 
-const data = await jsonp(GAS+"?type=init");
+  const car = document.getElementById("car");
+  const driver = document.getElementById("driverName");
 
-const car = document.getElementById("car");
-const driver = document.getElementById("driverName");
+  driver.innerHTML="";
+  data.drivers.forEach(d=>{
+    const o=document.createElement("option");
+    o.value=d.name;
+    o.textContent=d.name;
+    driver.appendChild(o);
+  });
 
-driver.innerHTML="";
-data.drivers.forEach(d=>{
-const o=document.createElement("option");
-o.value=d.name;
-o.textContent=d.name;
-driver.appendChild(o);
-});
+  car.innerHTML="";
+  data.cars.forEach(c=>{
+    const o=document.createElement("option");
+    o.value=c;
+    o.textContent=c;
+    car.appendChild(o);
+  });
 
-car.innerHTML="";
-data.cars.forEach(c=>{
-const o=document.createElement("option");
-o.value=c;
-o.textContent=c;
-car.appendChild(o);
-});
+  car.onchange = async ()=>{
+    const m = await jsonp(GAS+"?type=meter&car="+encodeURIComponent(car.value));
+    document.getElementById("meter").value = m;
+  };
 
-car.onchange = async ()=>{
-const m = await jsonp(GAS+`?type=meter&car=${encodeURIComponent(car.value)}`);
-document.getElementById("meter").value = m;
-};
-
-car.dispatchEvent(new Event("change"));
+  car.dispatchEvent(new Event("change"));
 }
 
 // 出発
 function start(){
+  const user = JSON.parse(localStorage.getItem("user"));
+  const car = document.getElementById("car").value;
+  const driver = document.getElementById("driverName").value;
+  const meter = document.getElementById("meter").value;
 
-const user = JSON.parse(localStorage.getItem("user"));
+  jsonp(
+    GAS+"?type=start"
+    +"&car="+encodeURIComponent(car)
+    +"&driver="+encodeURIComponent(driver)
+    +"&dept="+encodeURIComponent(user.dept)
+    +"&startMeter="+meter
+  );
 
-const car = document.getElementById("car").value;
-const driver = document.getElementById("driverName").value;
-const meter = document.getElementById("meter").value;
-
-jsonp(
-GAS+`?type=start`
-+`&car=${encodeURIComponent(car)}`
-+`&driver=${encodeURIComponent(driver)}`
-+`&dept=${encodeURIComponent(user.dept)}`
-+`&startMeter=${meter}`
-);
-
-localStorage.setItem("lastCar",car);
-
-location.href="driver_arrival.html";
+  localStorage.setItem("lastCar",car);
+  location.href="driver_arrival.html";
 }
 
-// GPS
+// GPSログ
 function startGPS(){
+  localStorage.setItem("gpsLog","[]");
 
-localStorage.setItem("gpsLog","[]");
-
-setInterval(()=>{
-navigator.geolocation.getCurrentPosition(pos=>{
-
-const log = JSON.parse(localStorage.getItem("gpsLog"));
-
-log.push({
-lat:pos.coords.latitude,
-lng:pos.coords.longitude
-});
-
-localStorage.setItem("gpsLog",JSON.stringify(log));
-
-});
-},30000);
+  setInterval(()=>{
+    navigator.geolocation.getCurrentPosition(pos=>{
+      const log = JSON.parse(localStorage.getItem("gpsLog"));
+      log.push({
+        lat:pos.coords.latitude,
+        lng:pos.coords.longitude
+      });
+      localStorage.setItem("gpsLog",JSON.stringify(log));
+    });
+  },30000);
 }
 
-// メーター
+// メーター取得
 async function loadEndMeter(){
-
-const car = localStorage.getItem("lastCar");
-
-const m = await jsonp(GAS+`?type=meter&car=${encodeURIComponent(car)}`);
-
-document.getElementById("endMeter").value = m;
+  const car = localStorage.getItem("lastCar");
+  const m = await jsonp(GAS+"?type=meter&car="+encodeURIComponent(car));
+  document.getElementById("endMeter").value = m;
 }
 
-// ログアウト
-function logout(){
-localStorage.clear();
-location.href="index.html";
+// 到着（修正版）
+function arrival(){
+  const gpsLog = JSON.parse(localStorage.getItem("gpsLog") || "[]");
+  const car = localStorage.getItem("lastCar");
+  const endMeter = document.getElementById("endMeter").value;
+
+  window.cb_arrival = function(){
+    localStorage.removeItem("gpsLog");
+    alert("完了");
+    location.href="driver_start.html";
+  };
+
+  const script = document.createElement("script");
+  script.src =
+    GAS+"?type=arrival"
+    +"&car="+encodeURIComponent(car)
+    +"&endMeter="+endMeter
+    +"&gpsLog="+encodeURIComponent(JSON.stringify(gpsLog))
+    +"&callback=cb_arrival"
+    +"&t="+Date.now();
+
+  document.body.appendChild(script);
 }
