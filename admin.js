@@ -2,15 +2,26 @@ const GAS="https://script.google.com/macros/s/AKfycbwbMFxKiQlT_hpb_iNjljeEvKZ7LM
 
 // JSONP共通
 function jsonp(url){
-return new Promise(res=>{
-const cb="cb_"+Date.now();
-window[cb]=data=>{
-res(data);
+return new Promise((resolve,reject)=>{
+
+const cb = "cb_" + Math.random().toString(36).substring(2);
+
+window[cb] = function(data){
+resolve(data);
+delete window[cb];
+script.remove();
+};
+
+const script = document.createElement("script");
+script.src = url + "&callback=" + cb + "&t=" + Date.now();
+
+script.onerror = function(){
+reject("JSONP error");
 delete window[cb];
 };
-const s=document.createElement("script");
-s.src=url+"&callback="+cb+"&t="+Date.now();
-document.body.appendChild(s);
+
+document.body.appendChild(script);
+
 });
 }
 
