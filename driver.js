@@ -111,6 +111,15 @@ function arrival(){
   const car = localStorage.getItem("lastCar");
   const endMeter = document.getElementById("endMeter").value;
 
+  const passengers = getSelected("passengers").join(",");
+  const destinations = getSelected("destinations").join(",");
+  const purposes = getSelected("purposes").join(",");
+
+  const passengerOther = document.getElementById("passengerOther").value;
+  const destOther = document.getElementById("destOther").value;
+  const purposeOther = document.getElementById("purposeOther").value;
+  const memo = document.getElementById("memo").value;
+
   window.cb_arrival = function(){
     localStorage.removeItem("gpsLog");
     alert("完了");
@@ -123,6 +132,10 @@ function arrival(){
     +"&car="+encodeURIComponent(car)
     +"&endMeter="+endMeter
     +"&gpsLog="+encodeURIComponent(JSON.stringify(gpsLog))
+    +"&passengers="+encodeURIComponent(passengers + "," + passengerOther)
+    +"&destinations="+encodeURIComponent(destinations + "," + destOther)
+    +"&purposes="+encodeURIComponent(purposes + "," + purposeOther)
+    +"&memo="+encodeURIComponent(memo)
     +"&callback=cb_arrival"
     +"&t="+Date.now();
 
