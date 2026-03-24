@@ -2,26 +2,15 @@ const GAS="https://script.google.com/macros/s/AKfycbwbMFxKiQlT_hpb_iNjljeEvKZ7LM
 
 // JSONP共通
 function jsonp(url){
-return new Promise((resolve,reject)=>{
-
-const cb = "cb_" + Math.random().toString(36).substring(2);
-
-window[cb] = function(data){
-resolve(data);
-delete window[cb];
-script.remove();
-};
-
-const script = document.createElement("script");
-script.src = url + "&callback=" + cb + "&t=" + Date.now();
-
-script.onerror = function(){
-reject("JSONP error");
+return new Promise(res=>{
+const cb="cb_"+Date.now();
+window[cb]=data=>{
+res(data);
 delete window[cb];
 };
-
-document.body.appendChild(script);
-
+const s=document.createElement("script");
+s.src=url+"&callback="+cb+"&t="+Date.now();
+document.body.appendChild(s);
 });
 }
 
@@ -66,27 +55,6 @@ markers.push(marker);
 });
 }
 
-// CSV用 車両リスト ←ここに追加
-async function loadCarsForCSV(){
-
-const data = await jsonp(GAS+"?type=init");
-
-if(!data || !data.cars){
-alert("車両データ取得失敗");
-return;
-}
-
-const select = document.getElementById("csvCar");
-select.innerHTML="";
-
-data.cars.forEach(c=>{
-const o=document.createElement("option");
-o.value=c;
-o.textContent=c;
-select.appendChild(o);
-});
-
-}
 // 車両追加
 async function addCar(){
 await jsonp(GAS+`?type=addCar&car=${encodeURIComponent(newCar.value)}`);
@@ -114,29 +82,10 @@ alert("更新OK");
 load();
 }
 
-// グループ取得
-async function loadGroups(){
-
-const groups = await jsonp(GAS+"?type=groups");
-
-pGroup.innerHTML="";
-
-groups.forEach(g=>{
-const o=document.createElement("option");
-o.value=g;
-o.textContent=g;
-pGroup.appendChild(o);
-});
-
-}
-
-window.onload = ()=>{
-  initMap();
-  load();
-  loadCarsForCSV();
-  loadCarsForCSVMonth(); // ←追加
-  loadGroups();
-  setInterval(load,5000);
+window.onload=()=>{
+initMap();
+load();
+setInterval(load,5000);
 };
 
 function downloadCSV(){
@@ -144,79 +93,7 @@ window.open(GAS+"?type=csv");
 }
 
 function downloadCarCSV(){
-
-const car = document.getElementById("csvCar").value;
-
-window.open(GAS+`?type=csvCar&car=${encodeURIComponent(car)}`);
-
-}
-function logout(){
-  localStorage.clear();
-  location.href = "index.html";
-}
-
-
-// 同乗者追加
-async function addPassenger(){
-await jsonp(
-GAS+`?type=addPassenger`
-+`&group=${pGroup.value}`
-+`&name=${pName.value}`
-);
-alert("追加OK");
-pGroup.value="";
-pName.value="";
-}
-
-// 行き先
-async function addDestination(){
-await jsonp(
-GAS+`?type=addDestination`
-+`&name=${dName.value}`
-);
-alert("追加OK");
-dName.value="";
-}
-
-// 用件
-async function addPurpose(){
-await jsonp(
-GAS+`?type=addPurpose`
-+`&name=${uName.value}`
-);
-alert("追加OK");
-uName.value="";
-}
-
-
-async function loadCarsForCSVMonth(){
-
-const data = await jsonp(GAS+"?type=init");
-
-const select = document.getElementById("csvCarMonth");
-select.innerHTML="";
-
-data.cars.forEach(c=>{
-const o=document.createElement("option");
-o.value=c;
-o.textContent=c;
-select.appendChild(o);
-});
-
-}
-
-function downloadCarMonthCSV(){
-
-const car = document.getElementById("csvCarMonth").value;
-const month = document.getElementById("csvMonth").value;
-
-if(!month){
-alert("月を選択してください");
-return;
-}
-
-window.open(
-GAS+`?type=csvCarMonth&car=${encodeURIComponent(car)}&month=${month}`
-);
-
+const car=prompt("車両名入力");
+if(!car)return;
+window.open(GAS+`?type=csvCar&car=${car}`);
 }
