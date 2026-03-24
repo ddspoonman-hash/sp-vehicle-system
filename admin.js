@@ -82,6 +82,22 @@ alert("更新OK");
 load();
 }
 
+async function loadGroups(){
+
+const groups = await jsonp(GAS+"?type=groups");
+
+pGroup.innerHTML="";
+
+groups.forEach(g=>{
+const o=document.createElement("option");
+o.value=g;
+o.textContent=g;
+pGroup.appendChild(o);
+});
+
+}
+
+
 window.onload=()=>{
 initMap();
 load();
