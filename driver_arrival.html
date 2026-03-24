@@ -2,190 +2,23 @@
 <html>
 <head>
 <meta name="viewport" content="width=device-width,initial-scale=1">
+<meta http-equiv="Cache-Control" content="no-store">
 <title>到着</title>
 <link rel="stylesheet" href="style.css">
-
-<style>
-.chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px;}
-.chip{
-padding:10px 14px;
-background:#eee;
-border-radius:20px;
-font-size:14px;
-}
-.chip.active{
-background:#007bff;
-color:#fff;
-}
-.tab{
-display:inline-block;
-padding:8px 12px;
-margin-right:6px;
-background:#ddd;
-border-radius:10px;
-}
-.tab.active{
-background:#007bff;
-color:#fff;
-}
-</style>
-
 </head>
-
 <body>
 
-<div class="header">到着処理</div>
+<div class="header">到着</div>
 
 <div class="card">
-
-<h3>運転者</h3>
-<select id="driverSelect"></select>
-
-<h3>同乗者</h3>
-<div id="groupTabs"></div>
-<div id="passengerList" class="chips"></div>
-<input id="passengerOther" placeholder="その他">
-
-<h3>行き先</h3>
-<div id="destList" class="chips"></div>
-<input id="destOther" placeholder="その他">
-
-<h3>用件</h3>
-<div id="purposeList" class="chips"></div>
-<input id="purposeOther" placeholder="その他">
-
-<h3>備考</h3>
-<input id="memo">
-
-<h3>到着メーター</h3>
-<input id="endMeter" readonly>
-
+  <h3>到着メーター</h3>
+  <input id="endMeter" readonly>
 </div>
 
-<div class="fixed-btn">
-<button class="btn-danger" onclick="arrivalEx()">到着</button>
+<div class="card">
+  <button onclick="arrival()">到着</button>
 </div>
 
-<script src="driver.js?v=20260323"></script>
-
-<script>
-
-
-
-// 初期化
-window.addEventListener("load", async ()=>{
-
-const user = JSON.parse(localStorage.getItem("user"));
-
-// driver
-const d = await jsonp(GAS+"?type=drivers");
-d.forEach(x=>{
-const o=document.createElement("option");
-o.value=x.name;
-o.textContent=x.name;
-if(x.name===user.name) o.selected=true;
-driverSelect.appendChild(o);
-});
-
-// masters
-const m = await jsonp(GAS+"?type=masters");
-
-allPassengers = m.passengers;
-
-// グループ抽出
-const groups = [...new Set(m.passengers.map(x=>x.group))];
-
-groups.forEach((g,i)=>{
-const tab=document.createElement("span");
-tab.className="tab";
-tab.textContent=g;
-tab.onclick=()=>{
-document.querySelectorAll(".tab").forEach(t=>t.classList.remove("active"));
-tab.classList.add("active");
-renderPassengers(g);
-};
-if(i==0){tab.classList.add("active"); renderPassengers(g);}
-groupTabs.appendChild(tab);
-});
-
-// 行き先
-m.destinations.forEach(x=>{
-createChip(x,destList,selectedDest);
-});
-
-// 用件
-m.purposes.forEach(x=>{
-createChip(x,purposeList,selectedPurpose);
-});
-
-});
-
-// 同乗者描画
-function renderPassengers(group){
-passengerList.innerHTML="";
-allPassengers.filter(x=>x.group==group).forEach(x=>{
-createChip(x.name,passengerList,selectedPassengers);
-});
-}
-
-// 汎用チップ
-function createChip(text,container,arr){
-
-const div=document.createElement("div");
-div.className="chip";
-div.textContent=text;
-
-// ★これだけ追加
-if(arr.includes(text)){
-div.classList.add("active");
-}
-
-div.onclick=()=>{
-if(arr.includes(text)){
-arr.splice(arr.indexOf(text),1);
-div.classList.remove("active");
-}else{
-arr.push(text);
-div.classList.add("active");
-}
-};
-
-container.appendChild(div);
-}
-
-// 到着
-function arrivalEx(){
-
-const gpsLog = JSON.parse(localStorage.getItem("gpsLog")||"[]");
-const car = localStorage.getItem("lastCar");
-
-const passengers = [...selectedPassengers, passengerOther.value].filter(Boolean).join(",");
-const dest = [...selectedDest, destOther.value].filter(Boolean).join(",");
-const purpose = [...selectedPurpose, purposeOther.value].filter(Boolean).join(",");
-
-const script=document.createElement("script");
-
-script.src =
-GAS+`?type=arrivalEx`
-+`&car=${car}`
-+`&gpsLog=${encodeURIComponent(JSON.stringify(gpsLog))}`
-+`&driver=${driverSelect.value}`
-+`&passengers=${encodeURIComponent(passengers)}`
-+`&destinations=${encodeURIComponent(dest)}`
-+`&purposes=${encodeURIComponent(purpose)}`
-+`&memo=${memo.value}`
-+`&callback=cb_arrival`
-+`&t=${Date.now()}`;
-
-document.body.appendChild(script);
-
-localStorage.removeItem("gpsLog");
-
-alert("完了");
-location.href="driver_start.html";
-}
-
-</script>
-
+<script src="driver.js?v=20260324"></script>
 </body>
 </html>
