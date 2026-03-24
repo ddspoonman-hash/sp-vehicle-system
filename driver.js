@@ -108,19 +108,26 @@ async function loadEndMeter(){
 // 到着（修正版）
 function arrival(){
   try{
+    console.log("arrival start");
 
     const gpsLog = JSON.parse(localStorage.getItem("gpsLog") || "[]");
     const car = localStorage.getItem("lastCar");
     const endMeter = document.getElementById("endMeter").value;
 
-    const passengers = (getSelected("passengers") || []).join(",");
-    const destinations = (getSelected("destinations") || []).join(",");
-    const purposes = (getSelected("purposes") || []).join(",");
+    const passengersArr = getSelected("passengers") || [];
+    const destinationsArr = getSelected("destinations") || [];
+    const purposesArr = getSelected("purposes") || [];
+
+    const passengers = passengersArr.join(",");
+    const destinations = destinationsArr.join(",");
+    const purposes = purposesArr.join(",");
 
     const passengerOther = document.getElementById("passengerOther")?.value || "";
     const destOther = document.getElementById("destOther")?.value || "";
     const purposeOther = document.getElementById("purposeOther")?.value || "";
     const memo = document.getElementById("memo")?.value || "";
+
+    console.log("data ok");
 
     window.cb_arrival = function(){
       localStorage.removeItem("gpsLog");
@@ -144,8 +151,8 @@ function arrival(){
     document.body.appendChild(script);
 
   }catch(e){
-    alert("エラー：" + e.message);
-    console.log(e);
+    alert("エラー発生：" + e.message);
+    console.error(e);
   }
 }
 
