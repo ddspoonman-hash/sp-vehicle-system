@@ -190,5 +190,9 @@ function getSelected(id){
     .map(e=>e.textContent);
 }
 
+function logout(){
+  localStorage.clear();
+  location.href = "index.html";
+}
 
 window.arrival = arrival;
