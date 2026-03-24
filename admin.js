@@ -113,6 +113,11 @@ async function loadCarsForCSV(){
 
 const data = await jsonp(GAS+"?type=init");
 
+if(!data || !data.cars){
+alert("車両データ取得失敗");
+return;
+}
+
 const select = document.getElementById("csvCar");
 select.innerHTML="";
 
