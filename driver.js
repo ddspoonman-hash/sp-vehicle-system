@@ -107,39 +107,46 @@ async function loadEndMeter(){
 
 // 到着（修正版）
 function arrival(){
-  const gpsLog = JSON.parse(localStorage.getItem("gpsLog") || "[]");
-  const car = localStorage.getItem("lastCar");
-  const endMeter = document.getElementById("endMeter").value;
+  try{
 
-  const passengers = getSelected("passengers").join(",");
-  const destinations = getSelected("destinations").join(",");
-  const purposes = getSelected("purposes").join(",");
+    const gpsLog = JSON.parse(localStorage.getItem("gpsLog") || "[]");
+    const car = localStorage.getItem("lastCar");
+    const endMeter = document.getElementById("endMeter").value;
 
-  const passengerOther = document.getElementById("passengerOther").value;
-  const destOther = document.getElementById("destOther").value;
-  const purposeOther = document.getElementById("purposeOther").value;
-  const memo = document.getElementById("memo").value;
+    const passengers = (getSelected("passengers") || []).join(",");
+    const destinations = (getSelected("destinations") || []).join(",");
+    const purposes = (getSelected("purposes") || []).join(",");
 
-  window.cb_arrival = function(){
-    localStorage.removeItem("gpsLog");
-    alert("完了");
-    location.href="driver_start.html";
-  };
+    const passengerOther = document.getElementById("passengerOther")?.value || "";
+    const destOther = document.getElementById("destOther")?.value || "";
+    const purposeOther = document.getElementById("purposeOther")?.value || "";
+    const memo = document.getElementById("memo")?.value || "";
 
-  const script = document.createElement("script");
-  script.src =
-    GAS+"?type=arrival"
-    +"&car="+encodeURIComponent(car)
-    +"&endMeter="+endMeter
-    +"&gpsLog="+encodeURIComponent(JSON.stringify(gpsLog))
-    +"&passengers="+encodeURIComponent(passengers + "," + passengerOther)
-    +"&destinations="+encodeURIComponent(destinations + "," + destOther)
-    +"&purposes="+encodeURIComponent(purposes + "," + purposeOther)
-    +"&memo="+encodeURIComponent(memo)
-    +"&callback=cb_arrival"
-    +"&t="+Date.now();
+    window.cb_arrival = function(){
+      localStorage.removeItem("gpsLog");
+      alert("完了");
+      location.href="driver_start.html";
+    };
 
-  document.body.appendChild(script);
+    const script = document.createElement("script");
+    script.src =
+      GAS+"?type=arrival"
+      +"&car="+encodeURIComponent(car)
+      +"&endMeter="+endMeter
+      +"&gpsLog="+encodeURIComponent(JSON.stringify(gpsLog))
+      +"&passengers="+encodeURIComponent(passengers + "," + passengerOther)
+      +"&destinations="+encodeURIComponent(destinations + "," + destOther)
+      +"&purposes="+encodeURIComponent(purposes + "," + purposeOther)
+      +"&memo="+encodeURIComponent(memo)
+      +"&callback=cb_arrival"
+      +"&t="+Date.now();
+
+    document.body.appendChild(script);
+
+  }catch(e){
+    alert("エラー：" + e.message);
+    console.log(e);
+  }
 }
 
 
