@@ -97,6 +97,22 @@ pGroup.appendChild(o);
 
 }
 
+// CSV用 車両リスト
+async function loadCarsForCSV(){
+
+const data = await jsonp(GAS+"?type=init");
+
+const select = document.getElementById("csvCar");
+select.innerHTML="";
+
+data.cars.forEach(c=>{
+const o=document.createElement("option");
+o.value=c;
+o.textContent=c;
+select.appendChild(o);
+});
+
+}
 
 window.onload = ()=>{
   initMap();
