@@ -58,3 +58,23 @@ h3{
   margin:10px 0 5px;
   color:#666;
 }
+
+
+.chips{
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+  margin-top:10px;
+}
+
+.chip{
+  padding:10px 14px;
+  background:#eee;
+  border-radius:20px;
+  font-size:14px;
+}
+
+.chip.active{
+  background:#007bff;
+  color:#fff;
+}
