@@ -1,20 +1,29 @@
 const GAS="https://script.google.com/macros/s/AKfycbwbMFxKiQlT_hpb_iNjljeEvKZ7LMr9q8i2KpdW6iWrO6d3pv40iun7SLRTFAstn9C5/exec";
 
-// JSONP
+// ---------------- JSONP ----------------
 function jsonp(url){
-  return new Promise(res=>{
+  return new Promise((resolve,reject)=>{
     const cb = "cb_" + Date.now();
-    window[cb]=data=>{
-      res(data);
+
+    window[cb] = function(data){
+      resolve(data);
+      delete window[cb];
+      script.remove();
+    };
+
+    const script = document.createElement("script");
+    script.src = url + "&callback=" + cb + "&t=" + Date.now();
+
+    script.onerror = function(){
+      reject("JSONP error");
       delete window[cb];
     };
-    const s=document.createElement("script");
-    s.src=url+"&callback="+cb+"&t="+Date.now();
-    document.body.appendChild(s);
+
+    document.body.appendChild(script);
   });
 }
 
-// 初期化
+// ---------------- 初期処理 ----------------
 window.onload = async ()=>{
   const user = JSON.parse(localStorage.getItem("user"));
   if(!user){
@@ -22,17 +31,19 @@ window.onload = async ()=>{
     return;
   }
 
+  // 出発画面
   if(document.getElementById("car")){
     initStart();
   }
 
+  // 到着画面
   if(document.getElementById("endMeter")){
     startGPS();
     loadEndMeter();
   }
 };
 
-// 出発初期化
+// ---------------- 出発初期化 ----------------
 async function initStart(){
   const data = await jsonp(GAS+"?type=init");
 
@@ -63,7 +74,7 @@ async function initStart(){
   car.dispatchEvent(new Event("change"));
 }
 
-// 出発
+// ---------------- 出発 ----------------
 function start(){
   const user = JSON.parse(localStorage.getItem("user"));
   const car = document.getElementById("car").value;
@@ -82,117 +93,38 @@ function start(){
   location.href="driver_arrival.html";
 }
 
-// GPSログ
+// ---------------- GPS ----------------
 function startGPS(){
   localStorage.setItem("gpsLog","[]");
 
   setInterval(()=>{
     navigator.geolocation.getCurrentPosition(pos=>{
-      const log = JSON.parse(localStorage.getItem("gpsLog"));
+      let log = JSON.parse(localStorage.getItem("gpsLog")||"[]");
+
       log.push({
         lat:pos.coords.latitude,
         lng:pos.coords.longitude
       });
+
+      // 🔥 重要：ログ肥大防止（20件まで）
+      if(log.length > 20){
+        log = log.slice(-20);
+      }
+
       localStorage.setItem("gpsLog",JSON.stringify(log));
     });
   },30000);
 }
 
-// メーター取得
+// ---------------- メーター ----------------
 async function loadEndMeter(){
   const car = localStorage.getItem("lastCar");
   const m = await jsonp(GAS+"?type=meter&car="+encodeURIComponent(car));
   document.getElementById("endMeter").value = m;
 }
 
-// 到着（修正版）
-function arrival(){
-  try{
-    console.log("arrival start");
-
-    const gpsLog = JSON.parse(localStorage.getItem("gpsLog") || "[]");
-    const car = localStorage.getItem("lastCar");
-    const endMeter = document.getElementById("endMeter").value;
-
-    const passengersArr = getSelected("passengers") || [];
-    const destinationsArr = getSelected("destinations") || [];
-    const purposesArr = getSelected("purposes") || [];
-
-    const passengers = passengersArr.join(",");
-    const destinations = destinationsArr.join(",");
-    const purposes = purposesArr.join(",");
-
-    const passengerOther = document.getElementById("passengerOther")?.value || "";
-    const destOther = document.getElementById("destOther")?.value || "";
-    const purposeOther = document.getElementById("purposeOther")?.value || "";
-    const memo = document.getElementById("memo")?.value || "";
-
-    console.log("data ok");
-
-    window.cb_arrival = function(){
-      localStorage.removeItem("gpsLog");
-      alert("完了");
-      location.href="driver_start.html";
-    };
-
-    const script = document.createElement("script");
-    script.src =
-      GAS+"?type=arrival"
-      +"&car="+encodeURIComponent(car)
-      +"&endMeter="+endMeter
-      +"&gpsLog="+encodeURIComponent(JSON.stringify(gpsLog))
-      +"&passengers="+encodeURIComponent(passengers + "," + passengerOther)
-      +"&destinations="+encodeURIComponent(destinations + "," + destOther)
-      +"&purposes="+encodeURIComponent(purposes + "," + purposeOther)
-      +"&memo="+encodeURIComponent(memo)
-      +"&callback=cb_arrival"
-      +"&t="+Date.now();
-
-    document.body.appendChild(script);
-
-  }catch(e){
-    alert("エラー発生：" + e.message);
-    console.error(e);
-  }
-}
-
-
-// ---------------- チップ生成 ----------------
-function createChips(id, list){
-  const box = document.getElementById(id);
-  box.innerHTML="";
-
-  list.forEach(text=>{
-    const div = document.createElement("div");
-    div.className="chip";
-    div.textContent=text;
-
-    div.onclick=()=>{
-      div.classList.toggle("active");
-    };
-
-    box.appendChild(div);
-  });
-}
-
-// 初期チップ
-window.addEventListener("load", ()=>{
-  if(document.getElementById("passengers")){
-    createChips("passengers",["Aさん","Bさん","Cさん"]);
-    createChips("destinations",["病院","駅","空港"]);
-    createChips("purposes",["送迎","通院","業務"]);
-  }
-});
-
-// 選択取得
-function getSelected(id){
-  return [...document.querySelectorAll("#"+id+" .active")]
-    .map(e=>e.textContent);
-}
-
+// ---------------- 共通 ----------------
 function logout(){
   localStorage.clear();
-  location.href = "index.html";
+  location.href="index.html";
 }
-
-window.arrival = arrival;
