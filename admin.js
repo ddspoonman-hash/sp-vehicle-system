@@ -118,6 +118,7 @@ window.onload = ()=>{
   initMap();
   load();
   loadGroups(); // ←これも追加
+  loadCarsForCSV();
   setInterval(load,5000);
 };
 
