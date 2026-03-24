@@ -98,10 +98,11 @@ pGroup.appendChild(o);
 }
 
 
-window.onload=()=>{
-initMap();
-load();
-setInterval(load,5000);
+window.onload = ()=>{
+  initMap();
+  load();
+  loadGroups(); // ←これも追加
+  setInterval(load,5000);
 };
 
 function downloadCSV(){
