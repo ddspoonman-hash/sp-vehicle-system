@@ -202,3 +202,20 @@ GAS+`?type=addPurpose`
 alert("追加OK");
 uName.value="";
 }
+
+
+function downloadCarMonthCSV(){
+
+const car = document.getElementById("csvCarMonth").value;
+const month = document.getElementById("csvMonth").value;
+
+if(!month){
+alert("月を選択してください");
+return;
+}
+
+window.open(
+GAS+`?type=csvCarMonth&car=${encodeURIComponent(car)}&month=${month}`
+);
+
+}
