@@ -182,3 +182,6 @@ function getSelected(id){
   return [...document.querySelectorAll("#"+id+" .active")]
     .map(e=>e.textContent);
 }
+
+
+window.arrival = arrival;
