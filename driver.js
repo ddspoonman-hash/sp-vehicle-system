@@ -128,3 +128,37 @@ function arrival(){
 
   document.body.appendChild(script);
 }
+
+
+// ---------------- チップ生成 ----------------
+function createChips(id, list){
+  const box = document.getElementById(id);
+  box.innerHTML="";
+
+  list.forEach(text=>{
+    const div = document.createElement("div");
+    div.className="chip";
+    div.textContent=text;
+
+    div.onclick=()=>{
+      div.classList.toggle("active");
+    };
+
+    box.appendChild(div);
+  });
+}
+
+// 初期チップ
+window.addEventListener("load", ()=>{
+  if(document.getElementById("passengers")){
+    createChips("passengers",["Aさん","Bさん","Cさん"]);
+    createChips("destinations",["病院","駅","空港"]);
+    createChips("purposes",["送迎","通院","業務"]);
+  }
+});
+
+// 選択取得
+function getSelected(id){
+  return [...document.querySelectorAll("#"+id+" .active")]
+    .map(e=>e.textContent);
+}
