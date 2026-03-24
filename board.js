@@ -29,9 +29,4 @@ localStorage.clear();
 location.href="index.html";
 }
 
-function logout(){
-  localStorage.clear();
-  location.href = "index.html";
-}
-
 load();
