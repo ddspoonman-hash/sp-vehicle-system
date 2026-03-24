@@ -191,6 +191,49 @@ location.href="driver_start.html";
 
 });
 </script>
+<script>
+let sending = false;
 
+window.arrivalEx = function(){
+
+if(sending) return;
+sending = true;
+
+const btn = document.querySelector(".btn-danger");
+btn.disabled = true;
+btn.textContent = "送信中...";
+
+const gpsLog = JSON.parse(localStorage.getItem("gpsLog")||"[]");
+const car = localStorage.getItem("lastCar");
+
+const passengers = [...selectedPassengers, passengerOther.value].filter(Boolean).join(",");
+const dest = [...selectedDest, destOther.value].filter(Boolean).join(",");
+const purpose = [...selectedPurpose, purposeOther.value].filter(Boolean).join(",");
+
+const script=document.createElement("script");
+
+script.src =
+GAS+`?type=arrivalEx`
++`&car=${car}`
++`&gpsLog=${encodeURIComponent(JSON.stringify(gpsLog))}`
++`&driver=${driverSelect.value}`
++`&passengers=${encodeURIComponent(passengers)}`
++`&destinations=${encodeURIComponent(dest)}`
++`&purposes=${encodeURIComponent(purpose)}`
++`&memo=${memo.value}`
++`&callback=cb_arrival`
++`&t=${Date.now()}`;
+
+document.body.appendChild(script);
+
+localStorage.removeItem("gpsLog");
+
+setTimeout(()=>{
+alert("完了");
+location.href="driver_start.html";
+},500);
+
+};
+</script>
 </body>
 </html>
