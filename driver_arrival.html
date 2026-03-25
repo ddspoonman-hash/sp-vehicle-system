@@ -148,7 +148,7 @@ const purpose=[...selectedPurpose,purposeOther.value].filter(Boolean).join(",");
 window.cb_arrival=function(res){
 
 if(!res || !res.ok){
-alert("保存失敗");
+alert("保存失敗\n" + (res && res.message ? res.message : "レスポンスなし"));
 return;
 }
 
