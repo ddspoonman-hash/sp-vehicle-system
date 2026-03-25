@@ -70,17 +70,21 @@ async function initStart(){
 
 // ---------------- 出発 ----------------
 async function start(){
-  const user=JSON.parse(localStorage.getItem("user"));
+  const user = JSON.parse(localStorage.getItem("user"));
+
+  const selectedCar = String(car.value || "").trim();
+  const selectedDriver = String(driverName.value || "").trim();
+  const selectedMeter = String(meter.value || "").trim();
 
   await jsonp(
     GAS+"?type=start"
-    +"&car="+encodeURIComponent(car.value)
-    +"&driver="+encodeURIComponent(driverName.value)
+    +"&car="+encodeURIComponent(selectedCar)
+    +"&driver="+encodeURIComponent(selectedDriver)
     +"&dept="+encodeURIComponent(user.dept||"")
-    +"&startMeter="+encodeURIComponent(meter.value)
+    +"&startMeter="+encodeURIComponent(selectedMeter)
   );
 
-  localStorage.setItem("lastCar",car.value);
+  localStorage.setItem("lastCar", selectedCar);
   location.href="driver_arrival.html";
 }
 
