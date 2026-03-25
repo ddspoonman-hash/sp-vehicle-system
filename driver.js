@@ -105,6 +105,8 @@ async function start(){
     alert("出発処理エラー");
     console.error(e);
   }
+
+  alert("出発登録OK：" + selectedCar);
 }
 
 // ---------------- GPS ----------------
