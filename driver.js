@@ -1,136 +1,149 @@
 const GAS="https://script.google.com/macros/s/AKfycbwbMFxKiQlT_hpb_iNjljeEvKZ7LMr9q8i2KpdW6iWrO6d3pv40iun7SLRTFAstn9C5/exec";
 
-let gpsWatchId=null;
+let gpsWatchId = null;
+let gpsSending = false;
 
 // ---------------- JSONP ----------------
 function jsonp(url){
   return new Promise((resolve,reject)=>{
-    const cb="cb_"+Math.random().toString(36).substring(2);
+    const cb = "cb_" + Math.random().toString(36).substring(2);
 
-    window[cb]=data=>{
+    window[cb] = function(data){
       resolve(data);
       delete window[cb];
       script.remove();
     };
 
-    const script=document.createElement("script");
-    script.src=url+"&callback="+cb+"&t="+Date.now();
+    const script = document.createElement("script");
+    script.src = url + "&callback=" + cb + "&t=" + Date.now();
 
-    script.onerror=()=>reject("JSONP error");
+    script.onerror = function(){
+      reject(new Error("JSONP error"));
+      delete window[cb];
+      script.remove();
+    };
 
     document.body.appendChild(script);
   });
 }
 
 // ---------------- 初期 ----------------
-window.onload=async ()=>{
-  const user=JSON.parse(localStorage.getItem("user"));
+window.onload = async ()=>{
+  const user = JSON.parse(localStorage.getItem("user"));
   if(!user){
-    location.href="index.html";
+    location.href = "index.html";
     return;
   }
 
   if(document.getElementById("car")){
-    initStart();
+    await initStart();
   }
 
   if(document.getElementById("endMeter")){
-    loadEndMeter();
+    await loadEndMeter();
     startGPS();
   }
 };
 
 // ---------------- 出発画面 ----------------
 async function initStart(){
-  const data=await jsonp(GAS+"?type=init");
+  const data = await jsonp(GAS + "?type=init");
 
-  driverName.innerHTML="";
-  data.drivers.forEach(d=>{
-    const o=document.createElement("option");
-    o.value=d.name;
-    o.textContent=d.name;
-    driverName.appendChild(o);
+  const driverSelect = document.getElementById("driverName");
+  const carSelect = document.getElementById("car");
+  const meterInput = document.getElementById("meter");
+  const user = JSON.parse(localStorage.getItem("user"));
+
+  driverSelect.innerHTML = "";
+  (data.drivers || []).forEach(d=>{
+    const o = document.createElement("option");
+    o.value = d.name;
+    o.textContent = d.name;
+    if(user && d.name === user.name) o.selected = true;
+    driverSelect.appendChild(o);
   });
 
-  car.innerHTML="";
-  data.cars.forEach(c=>{
-    const o=document.createElement("option");
-    o.value=c;
-    o.textContent=c;
-    car.appendChild(o);
+  carSelect.innerHTML = "";
+  (data.cars || []).forEach(c=>{
+    const o = document.createElement("option");
+    o.value = c;
+    o.textContent = c;
+    carSelect.appendChild(o);
   });
 
-  car.onchange=async ()=>{
-    const m=await jsonp(GAS+"?type=meter&car="+encodeURIComponent(car.value));
-    meter.value=m;
+  carSelect.onchange = async ()=>{
+    const m = await jsonp(GAS + "?type=meter&car=" + encodeURIComponent(carSelect.value));
+    meterInput.value = m;
   };
 
-  car.dispatchEvent(new Event("change"));
+  carSelect.dispatchEvent(new Event("change"));
 }
 
 // ---------------- 出発 ----------------
 async function start(){
+  try{
+    const user = JSON.parse(localStorage.getItem("user"));
+    const selectedCar = String(document.getElementById("car").value || "").trim();
+    const selectedDriver = String(document.getElementById("driverName").value || "").trim();
+    const selectedMeter = String(document.getElementById("meter").value || "").trim();
 
-  const user = JSON.parse(localStorage.getItem("user"));
+    console.log("出発 car=", selectedCar);
+    console.log("driver=", selectedDriver);
+    console.log("meter=", selectedMeter);
 
-  const selectedCar = String(car.value || "").trim();
-  const selectedDriver = String(driverName.value || "").trim();
-  const selectedMeter = String(meter.value || "").trim();
+    await jsonp(
+      GAS + "?type=start"
+      + "&car=" + encodeURIComponent(selectedCar)
+      + "&driver=" + encodeURIComponent(selectedDriver)
+      + "&dept=" + encodeURIComponent(user.dept || "")
+      + "&startMeter=" + encodeURIComponent(selectedMeter)
+    );
 
-  // 👇ここ追加（デバッグ）
-  console.log("出発 car=", selectedCar);
-  console.log("driver=", selectedDriver);
-  console.log("meter=", selectedMeter);
-
-  await jsonp(
-    GAS+"?type=start"
-    +"&car="+encodeURIComponent(selectedCar)
-    +"&driver="+encodeURIComponent(selectedDriver)
-    +"&dept="+encodeURIComponent(user.dept||"")
-    +"&startMeter="+encodeURIComponent(selectedMeter)
-  );
-
-  localStorage.setItem("lastCar", selectedCar);
-  location.href="driver_arrival.html";
+    localStorage.setItem("lastCar", selectedCar);
+    location.href = "driver_arrival.html";
+  }catch(e){
+    alert("出発処理エラー");
+    console.error(e);
+  }
 }
 
 // ---------------- GPS ----------------
 function startGPS(){
-
   if(!navigator.geolocation){
-    alert("GPS未対応端末");
+    alert("この端末はGPS未対応です");
     return;
   }
 
-  localStorage.setItem("gpsLog","[]");
+  localStorage.setItem("gpsLog", "[]");
+  updateGpsCount();
 
   navigator.geolocation.getCurrentPosition(
-    p=>saveGps(p),
-    e=>console.error("GPS初回取得失敗", e),
+    pos => saveGps(pos),
+    err => console.error("GPS初回取得失敗", err),
     {
-      enableHighAccuracy:true,
-      timeout:30000,
-      maximumAge:5000
+      enableHighAccuracy: true,
+      timeout: 30000,
+      maximumAge: 5000
     }
   );
 
-  gpsWatchId=navigator.geolocation.watchPosition(
-    p=>saveGps(p),
-    e=>console.error("GPS監視失敗", e),
+  gpsWatchId = navigator.geolocation.watchPosition(
+    pos => saveGps(pos),
+    err => console.error("GPS監視失敗", err),
     {
-      enableHighAccuracy:true,
-      timeout:30000,
-      maximumAge:5000
+      enableHighAccuracy: true,
+      timeout: 30000,
+      maximumAge: 5000
     }
   );
 }
 
 function saveGps(pos){
-
   const accuracy = Number(pos.coords.accuracy || 9999);
 
   // 精度が悪すぎる点は捨てる
   if(accuracy > 30){
+    console.log("GPS破棄 accuracy>", accuracy);
     return;
   }
 
@@ -139,30 +152,45 @@ function saveGps(pos){
   const point = {
     lat: Number(pos.coords.latitude),
     lng: Number(pos.coords.longitude),
-    accuracy: accuracy
+    accuracy: accuracy,
+    ts: Date.now()
   };
 
-  // 直前点との距離が近すぎるなら捨てる
+  // 直前と近すぎる点は捨てる
   if(log.length > 0){
     const last = log[log.length - 1];
     const d = distanceOnePoint(last.lat, last.lng, point.lat, point.lng);
 
     // 15m未満はブレ扱い
     if(d < 15){
+      console.log("GPS破棄 近すぎ", d);
       return;
     }
   }
 
   log.push(point);
 
+  // URL長対策
   if(log.length > 20){
     log = log.slice(-20);
   }
 
   localStorage.setItem("gpsLog", JSON.stringify(log));
+  updateGpsCount();
 
-  if(document.getElementById("gpsCount")){
-    gpsCount.textContent = "GPS件数：" + log.length;
+  console.log("GPS保存", {
+    count: log.length,
+    lat: point.lat,
+    lng: point.lng,
+    accuracy: point.accuracy
+  });
+}
+
+function updateGpsCount(){
+  const el = document.getElementById("gpsCount");
+  if(el){
+    const log = JSON.parse(localStorage.getItem("gpsLog") || "[]");
+    el.textContent = "GPS件数：" + log.length;
   }
 }
 
@@ -182,21 +210,47 @@ function distanceOnePoint(lat1, lng1, lat2, lng2){
 }
 
 function stopGPS(){
-  if(gpsWatchId){
+  if(gpsWatchId !== null){
     navigator.geolocation.clearWatch(gpsWatchId);
+    gpsWatchId = null;
   }
 }
 
-// ---------------- メーター ----------------
+// ---------------- 到着画面メーター ----------------
 async function loadEndMeter(){
-  const car=localStorage.getItem("lastCar");
-  const m=await jsonp(GAS+"?type=meter&car="+encodeURIComponent(car));
-  endMeter.value=m;
+  const car = localStorage.getItem("lastCar");
+  if(!car) return;
+
+  const m = await jsonp(GAS + "?type=meter&car=" + encodeURIComponent(car));
+  document.getElementById("endMeter").value = m;
+}
+
+// ---------------- 到着送信ガード ----------------
+function lockArrivalButton(){
+  if(gpsSending) return false;
+  gpsSending = true;
+
+  const btn = document.querySelector(".btn-danger");
+  if(btn){
+    btn.disabled = true;
+    btn.textContent = "送信中...";
+  }
+  return true;
+}
+
+function unlockArrivalButton(){
+  gpsSending = false;
+
+  const btn = document.querySelector(".btn-danger");
+  if(btn){
+    btn.disabled = false;
+    btn.textContent = "到着";
+  }
 }
 
 // ---------------- logout ----------------
 function logout(){
   stopGPS();
   localStorage.clear();
-  location.href="index.html";
+  location.href = "index.html";
 }
