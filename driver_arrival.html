@@ -6,11 +6,44 @@
 <link rel="stylesheet" href="style.css">
 
 <style>
-.chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px;}
-.chip{padding:10px 14px;background:#eee;border-radius:20px;}
-.chip.active{background:#007bff;color:#fff;}
-.tab{display:inline-block;padding:8px 12px;margin-right:6px;background:#ddd;border-radius:10px;}
-.tab.active{background:#007bff;color:#fff;}
+.chips{
+display:flex;
+flex-wrap:wrap;
+gap:8px;
+margin-top:8px;
+}
+
+.chip{
+padding:10px 14px;
+background:#eee;
+border-radius:20px;
+font-size:14px;
+}
+
+.chip.active{
+background:#007bff;
+color:#fff;
+}
+
+.tab{
+display:inline-block;
+padding:8px 12px;
+margin-right:6px;
+background:#ddd;
+border-radius:10px;
+cursor:pointer;
+}
+
+.tab.active{
+background:#007bff;
+color:#fff;
+}
+
+#gpsCount{
+margin-top:8px;
+font-size:14px;
+color:#666;
+}
 </style>
 </head>
 
@@ -42,7 +75,7 @@
 <h3>到着メーター</h3>
 <input id="endMeter" readonly>
 
-<div id="gpsCount"></div>
+<div id="gpsCount">GPS件数：0</div>
 
 </div>
 
@@ -53,219 +86,148 @@
 <script src="driver.js?v=20260325"></script>
 
 <script>
-let selectedPassengers=new Set();
-let selectedDest=new Set();
-let selectedPurpose=new Set();
-let allPassengers=[];
+let selectedPassengers = new Set();
+let selectedDest = new Set();
+let selectedPurpose = new Set();
+let allPassengers = [];
 
-window.addEventListener("load",async ()=>{
+window.addEventListener("load", async ()=>{
 
-const user=JSON.parse(localStorage.getItem("user"));
+  const user = JSON.parse(localStorage.getItem("user"));
+  if(!user){
+    location.href = "index.html";
+    return;
+  }
 
-const d=await jsonp(GAS+"?type=drivers");
-d.forEach(x=>{
-const o=document.createElement("option");
-o.value=x.name;
-o.textContent=x.name;
-if(x.name===user.name) o.selected=true;
-driverSelect.appendChild(o);
-});
-
-const m=await jsonp(GAS+"?type=masters");
-
-allPassengers=m.passengers;
-
-const groups=[...new Set(m.passengers.map(x=>x.group))];
-
-groups.forEach((g,i)=>{
-const tab=document.createElement("span");
-tab.className="tab";
-tab.textContent=g;
-
-tab.onclick=()=>{
-document.querySelectorAll(".tab").forEach(t=>t.classList.remove("active"));
-tab.classList.add("active");
-renderPassengers(g);
-};
-
-if(i==0){
-tab.classList.add("active");
-renderPassengers(g);
-}
-
-groupTabs.appendChild(tab);
-});
-
-m.destinations.forEach(x=>{
-createChip(x,destList,selectedDest);
-});
-
-m.purposes.forEach(x=>{
-createChip(x,purposeList,selectedPurpose);
-});
-
-});
-
-// 同乗者
-function renderPassengers(group){
-passengerList.innerHTML="";
-allPassengers.filter(x=>x.group==group).forEach(x=>{
-createChip(x.name,passengerList,selectedPassengers);
-});
-}
-
-// chip
-function createChip(text,container,set){
-const div=document.createElement("div");
-div.className="chip";
-div.textContent=text;
-
-if(set.has(text)) div.classList.add("active");
-
-div.onclick=()=>{
-if(set.has(text)){
-set.delete(text);
-div.classList.remove("active");
-}else{
-set.add(text);
-div.classList.add("active");
-}
-};
-
-container.appendChild(div);
-}
-
-// ---------------- 到着 ----------------
-<script>
-let selectedPassengers=new Set();
-let selectedDest=new Set();
-let selectedPurpose=new Set();
-let allPassengers=[];
-
-window.addEventListener("load",async ()=>{
-
-const user=JSON.parse(localStorage.getItem("user"));
-
-const d=await jsonp(GAS+"?type=drivers");
-d.forEach(x=>{
-const o=document.createElement("option");
-o.value=x.name;
-o.textContent=x.name;
-if(x.name===user.name) o.selected=true;
-driverSelect.appendChild(o);
-});
-
-const m=await jsonp(GAS+"?type=masters");
-
-allPassengers=m.passengers || [];
-
-const groups=[...new Set(allPassengers.map(x=>x.group))];
-
-groups.forEach((g,i)=>{
-const tab=document.createElement("span");
-tab.className="tab";
-tab.textContent=g;
-
-tab.onclick=()=>{
-document.querySelectorAll(".tab").forEach(t=>t.classList.remove("active"));
-tab.classList.add("active");
-renderPassengers(g);
-};
-
-if(i===0){
-tab.classList.add("active");
-renderPassengers(g);
-}
-
-groupTabs.appendChild(tab);
-});
-
-(m.destinations || []).forEach(x=>{
-createChip(x,destList,selectedDest);
-});
-
-(m.purposes || []).forEach(x=>{
-createChip(x,purposeList,selectedPurpose);
-});
-
-});
-
-function renderPassengers(group){
-passengerList.innerHTML="";
-allPassengers
-  .filter(x=>x.group==group)
-  .forEach(x=>{
-    createChip(x.name,passengerList,selectedPassengers);
+  const d = await jsonp(GAS + "?type=drivers");
+  driverSelect.innerHTML = "";
+  d.forEach(x=>{
+    const o = document.createElement("option");
+    o.value = x.name;
+    o.textContent = x.name;
+    if(x.name === user.name) o.selected = true;
+    driverSelect.appendChild(o);
   });
+
+  const m = await jsonp(GAS + "?type=masters");
+
+  allPassengers = m.passengers || [];
+
+  const groups = [...new Set(allPassengers.map(x=>x.group))];
+  groupTabs.innerHTML = "";
+
+  groups.forEach((g,i)=>{
+    const tab = document.createElement("span");
+    tab.className = "tab";
+    tab.textContent = g;
+
+    tab.onclick = ()=>{
+      document.querySelectorAll(".tab").forEach(t=>t.classList.remove("active"));
+      tab.classList.add("active");
+      renderPassengers(g);
+    };
+
+    if(i === 0){
+      tab.classList.add("active");
+    }
+
+    groupTabs.appendChild(tab);
+  });
+
+  if(groups.length > 0){
+    renderPassengers(groups[0]);
+  }
+
+  destList.innerHTML = "";
+  (m.destinations || []).forEach(x=>{
+    createChip(x, destList, selectedDest);
+  });
+
+  purposeList.innerHTML = "";
+  (m.purposes || []).forEach(x=>{
+    createChip(x, purposeList, selectedPurpose);
+  });
+
+  const log = JSON.parse(localStorage.getItem("gpsLog") || "[]");
+  gpsCount.textContent = "GPS件数：" + log.length;
+});
+
+function renderPassengers(group){
+  passengerList.innerHTML = "";
+  allPassengers
+    .filter(x=>x.group == group)
+    .forEach(x=>{
+      createChip(x.name, passengerList, selectedPassengers);
+    });
 }
 
-function createChip(text,container,set){
-const div=document.createElement("div");
-div.className="chip";
-div.textContent=text;
+function createChip(text, container, setObj){
+  const div = document.createElement("div");
+  div.className = "chip";
+  div.textContent = text;
 
-if(set.has(text)) div.classList.add("active");
+  if(setObj.has(text)){
+    div.classList.add("active");
+  }
 
-div.onclick=()=>{
-if(set.has(text)){
-set.delete(text);
-div.classList.remove("active");
-}else{
-set.add(text);
-div.classList.add("active");
-}
-};
+  div.onclick = ()=>{
+    if(setObj.has(text)){
+      setObj.delete(text);
+      div.classList.remove("active");
+    }else{
+      setObj.add(text);
+      div.classList.add("active");
+    }
+  };
 
-container.appendChild(div);
+  container.appendChild(div);
 }
 
 function arrivalEx(){
 
-const gpsLog=JSON.parse(localStorage.getItem("gpsLog")||"[]");
-const car=String(localStorage.getItem("lastCar")||"").trim();
+  const gpsLog = JSON.parse(localStorage.getItem("gpsLog") || "[]");
+  const car = String(localStorage.getItem("lastCar") || "").trim();
 
-console.log("到着 car=", car);
-console.log("gpsLog=", gpsLog);
+  console.log("到着 car=", car);
+  console.log("gpsLog=", gpsLog);
 
-const passengers=[...selectedPassengers,passengerOther.value].filter(Boolean).join(",");
-const dest=[...selectedDest,destOther.value].filter(Boolean).join(",");
-const purpose=[...selectedPurpose,purposeOther.value].filter(Boolean).join(",");
+  const passengers = [...selectedPassengers, passengerOther.value].filter(Boolean).join(",");
+  const dest = [...selectedDest, destOther.value].filter(Boolean).join(",");
+  const purpose = [...selectedPurpose, purposeOther.value].filter(Boolean).join(",");
 
-window.cb_arrival=function(res){
+  window.cb_arrival = function(res){
 
-if(!res || !res.ok){
-alert("保存失敗\n" + (res && res.message ? res.message : "レスポンスなし"));
-return;
+    if(!res || !res.ok){
+      alert("保存失敗\n" + (res && res.message ? res.message : "レスポンスなし"));
+      return;
+    }
+
+    stopGPS();
+    localStorage.removeItem("gpsLog");
+
+    alert("完了\n距離：" + res.distance + "m");
+    location.href = "driver_start.html";
+  };
+
+  const script = document.createElement("script");
+  script.src =
+    GAS + `?type=arrivalEx`
+    + `&car=${encodeURIComponent(car)}`
+    + `&gpsLog=${encodeURIComponent(JSON.stringify(gpsLog))}`
+    + `&driver=${encodeURIComponent(driverSelect.value)}`
+    + `&passengers=${encodeURIComponent(passengers)}`
+    + `&destinations=${encodeURIComponent(dest)}`
+    + `&purposes=${encodeURIComponent(purpose)}`
+    + `&memo=${encodeURIComponent(memo.value)}`
+    + `&callback=cb_arrival`
+    + `&t=${Date.now()}`;
+
+  script.onerror = function(){
+    alert("到着送信失敗");
+  };
+
+  document.body.appendChild(script);
 }
-
-stopGPS();
-localStorage.removeItem("gpsLog");
-
-alert("完了\n距離："+res.distance+"m");
-location.href="driver_start.html";
-};
-
-const script=document.createElement("script");
-
-script.src=
-GAS+`?type=arrivalEx`
-+`&car=${encodeURIComponent(car)}`
-+`&gpsLog=${encodeURIComponent(JSON.stringify(gpsLog))}`
-+`&driver=${encodeURIComponent(driverSelect.value)}`
-+`&passengers=${encodeURIComponent(passengers)}`
-+`&destinations=${encodeURIComponent(dest)}`
-+`&purposes=${encodeURIComponent(purpose)}`
-+`&memo=${encodeURIComponent(memo.value)}`
-+`&callback=cb_arrival`
-+`&t=${Date.now()}`;
-
-script.onerror=function(){
-alert("到着送信失敗");
-};
-
-document.body.appendChild(script);
-}
-</script>
 </script>
 
 </body>
