@@ -7,42 +7,37 @@
 
 <style>
 .chips{
-display:flex;
-flex-wrap:wrap;
-gap:8px;
-margin-top:8px;
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+  margin-top:8px;
 }
-
 .chip{
-padding:10px 14px;
-background:#eee;
-border-radius:20px;
-font-size:14px;
+  padding:10px 14px;
+  background:#eee;
+  border-radius:20px;
+  font-size:14px;
 }
-
 .chip.active{
-background:#007bff;
-color:#fff;
+  background:#007bff;
+  color:#fff;
 }
-
 .tab{
-display:inline-block;
-padding:8px 12px;
-margin-right:6px;
-background:#ddd;
-border-radius:10px;
-cursor:pointer;
+  display:inline-block;
+  padding:8px 12px;
+  margin-right:6px;
+  background:#ddd;
+  border-radius:10px;
+  cursor:pointer;
 }
-
 .tab.active{
-background:#007bff;
-color:#fff;
+  background:#007bff;
+  color:#fff;
 }
-
 #gpsCount{
-margin-top:8px;
-font-size:14px;
-color:#666;
+  margin-top:8px;
+  font-size:14px;
+  color:#666;
 }
 </style>
 </head>
@@ -53,34 +48,34 @@ color:#666;
 
 <div class="card">
 
-<h3>運転者</h3>
-<select id="driverSelect"></select>
+  <h3>運転者</h3>
+  <select id="driverSelect"></select>
 
-<h3>同乗者</h3>
-<div id="groupTabs"></div>
-<div id="passengerList" class="chips"></div>
-<input id="passengerOther" placeholder="その他">
+  <h3>同乗者</h3>
+  <div id="groupTabs"></div>
+  <div id="passengerList" class="chips"></div>
+  <input id="passengerOther" placeholder="その他">
 
-<h3>行き先</h3>
-<div id="destList" class="chips"></div>
-<input id="destOther" placeholder="その他">
+  <h3>行き先</h3>
+  <div id="destList" class="chips"></div>
+  <input id="destOther" placeholder="その他">
 
-<h3>用件</h3>
-<div id="purposeList" class="chips"></div>
-<input id="purposeOther" placeholder="その他">
+  <h3>用件</h3>
+  <div id="purposeList" class="chips"></div>
+  <input id="purposeOther" placeholder="その他">
 
-<h3>備考</h3>
-<input id="memo">
+  <h3>備考</h3>
+  <input id="memo">
 
-<h3>到着メーター</h3>
-<input id="endMeter" readonly>
+  <h3>到着メーター</h3>
+  <input id="endMeter" readonly>
 
-<div id="gpsCount">GPS件数：0</div>
+  <div id="gpsCount">GPS件数：0</div>
 
 </div>
 
 <div class="fixed-btn">
-<button class="btn-danger" onclick="arrivalEx()">到着</button>
+  <button class="btn-danger" onclick="arrivalEx()">到着</button>
 </div>
 
 <script src="driver.js?v=20260325"></script>
@@ -91,8 +86,7 @@ let selectedDest = new Set();
 let selectedPurpose = new Set();
 let allPassengers = [];
 
-window.addEventListener("load", async ()=>{
-
+window.addEventListener("load", async () => {
   const user = JSON.parse(localStorage.getItem("user"));
   if(!user){
     location.href = "index.html";
@@ -101,7 +95,7 @@ window.addEventListener("load", async ()=>{
 
   const d = await jsonp(GAS + "?type=drivers");
   driverSelect.innerHTML = "";
-  d.forEach(x=>{
+  d.forEach(x => {
     const o = document.createElement("option");
     o.value = x.name;
     o.textContent = x.name;
@@ -113,16 +107,16 @@ window.addEventListener("load", async ()=>{
 
   allPassengers = m.passengers || [];
 
-  const groups = [...new Set(allPassengers.map(x=>x.group))];
+  const groups = [...new Set(allPassengers.map(x => x.group))];
   groupTabs.innerHTML = "";
 
-  groups.forEach((g,i)=>{
+  groups.forEach((g, i) => {
     const tab = document.createElement("span");
     tab.className = "tab";
     tab.textContent = g;
 
-    tab.onclick = ()=>{
-      document.querySelectorAll(".tab").forEach(t=>t.classList.remove("active"));
+    tab.onclick = () => {
+      document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
       tab.classList.add("active");
       renderPassengers(g);
     };
@@ -139,12 +133,12 @@ window.addEventListener("load", async ()=>{
   }
 
   destList.innerHTML = "";
-  (m.destinations || []).forEach(x=>{
+  (m.destinations || []).forEach(x => {
     createChip(x, destList, selectedDest);
   });
 
   purposeList.innerHTML = "";
-  (m.purposes || []).forEach(x=>{
+  (m.purposes || []).forEach(x => {
     createChip(x, purposeList, selectedPurpose);
   });
 
@@ -155,8 +149,8 @@ window.addEventListener("load", async ()=>{
 function renderPassengers(group){
   passengerList.innerHTML = "";
   allPassengers
-    .filter(x=>x.group == group)
-    .forEach(x=>{
+    .filter(x => x.group == group)
+    .forEach(x => {
       createChip(x.name, passengerList, selectedPassengers);
     });
 }
@@ -170,7 +164,7 @@ function createChip(text, container, setObj){
     div.classList.add("active");
   }
 
-  div.onclick = ()=>{
+  div.onclick = () => {
     if(setObj.has(text)){
       setObj.delete(text);
       div.classList.remove("active");
@@ -183,9 +177,7 @@ function createChip(text, container, setObj){
   container.appendChild(div);
 }
 
-<script>
 function arrivalEx(){
-
   if(!lockArrivalButton()) return;
 
   const gpsLog = JSON.parse(localStorage.getItem("gpsLog") || "[]");
@@ -199,7 +191,6 @@ function arrivalEx(){
   const purpose = [...selectedPurpose, purposeOther.value].filter(Boolean).join(",");
 
   window.cb_arrival = function(res){
-
     if(!res || !res.ok){
       alert("保存失敗\n" + (res && res.message ? res.message : "レスポンスなし"));
       unlockArrivalButton();
@@ -233,7 +224,6 @@ function arrivalEx(){
 
   document.body.appendChild(script);
 }
-</script>
 </script>
 
 </body>
