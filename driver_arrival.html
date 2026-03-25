@@ -147,7 +147,6 @@ window.addEventListener("load", async () => {
   const log = JSON.parse(localStorage.getItem("gpsLog") || "[]");
   gpsCount.textContent = "GPS件数：" + log.length;
 
-  // 念のためボタンを明示的に一度だけ紐付け
   const btn = document.querySelector(".btn-danger");
   if(btn){
     btn.onclick = arrivalEx;
@@ -187,14 +186,12 @@ function createChip(text, container, setObj){
 
 function arrivalEx(){
   if(arrivalSending || arrivalDone) return false;
-
   arrivalSending = true;
 
   const btn = document.querySelector(".btn-danger");
   if(btn){
     btn.disabled = true;
     btn.textContent = "送信中...";
-    btn.onclick = null;
   }
 
   const gpsLog = JSON.parse(localStorage.getItem("gpsLog") || "[]");
@@ -207,12 +204,9 @@ function arrivalEx(){
   const dest = [...selectedDest, destOther.value].filter(Boolean).join(",");
   const purpose = [...selectedPurpose, purposeOther.value].filter(Boolean).join(",");
 
-  // 既存 callback/script を完全に消す
-  try { delete window.cb_arrival; } catch(e) {}
-  const oldScript = document.getElementById("arrivalScript");
-  if(oldScript) oldScript.remove();
+  const callbackName = "cb_arrival_" + Date.now() + "_" + Math.random().toString(36).slice(2);
 
-  window.cb_arrival = function(res){
+  window[callbackName] = function(res){
     console.log("arrival response=", res);
 
     if(arrivalDone) return;
@@ -221,6 +215,7 @@ function arrivalEx(){
       arrivalDone = true;
       stopGPS();
       localStorage.removeItem("gpsLog");
+      delete window[callbackName];
 
       alert("完了\n距離：" + res.distance + "m");
       location.href = "driver_start.html";
@@ -228,19 +223,17 @@ function arrivalEx(){
     }
 
     arrivalSending = false;
+    delete window[callbackName];
 
     if(btn){
       btn.disabled = false;
       btn.textContent = "到着";
-      btn.onclick = arrivalEx;
     }
 
     alert("保存失敗\n" + (res && res.message ? res.message : "レスポンスなし"));
   };
 
   const script = document.createElement("script");
-  script.id = "arrivalScript";
-  script.async = false;
   script.src =
     GAS + `?type=arrivalEx`
     + `&car=${encodeURIComponent(car)}`
@@ -250,16 +243,16 @@ function arrivalEx(){
     + `&destinations=${encodeURIComponent(dest)}`
     + `&purposes=${encodeURIComponent(purpose)}`
     + `&memo=${encodeURIComponent(memo.value)}`
-    + `&callback=cb_arrival`
+    + `&callback=${callbackName}`
     + `&t=${Date.now()}`;
 
   script.onerror = function(){
     arrivalSending = false;
+    delete window[callbackName];
 
     if(btn){
       btn.disabled = false;
       btn.textContent = "到着";
-      btn.onclick = arrivalEx;
     }
 
     alert("到着送信失敗");
