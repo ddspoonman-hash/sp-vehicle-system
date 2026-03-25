@@ -106,17 +106,21 @@ function startGPS(){
 
   navigator.geolocation.getCurrentPosition(
     p=>saveGps(p),
-    e=>console.error(e),
-    {enableHighAccuracy:true}
+    e=>console.error("GPS初回取得失敗", e),
+    {
+      enableHighAccuracy:true,
+      timeout:30000,
+      maximumAge:5000
+    }
   );
 
   gpsWatchId=navigator.geolocation.watchPosition(
     p=>saveGps(p),
-    e=>console.error(e),
+    e=>console.error("GPS監視失敗", e),
     {
       enableHighAccuracy:true,
-      timeout:20000,
-      maximumAge:0
+      timeout:30000,
+      maximumAge:5000
     }
   );
 }
