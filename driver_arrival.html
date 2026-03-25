@@ -1,5 +1,58 @@
-<script>
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>到着</title>
+<link rel="stylesheet" href="style.css">
 
+<style>
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px;}
+.chip{padding:10px 14px;background:#eee;border-radius:20px;}
+.chip.active{background:#007bff;color:#fff;}
+.tab{display:inline-block;padding:8px 12px;margin-right:6px;background:#ddd;border-radius:10px;}
+.tab.active{background:#007bff;color:#fff;}
+</style>
+</head>
+
+<body>
+
+<div class="header">到着処理</div>
+
+<div class="card">
+
+<h3>運転者</h3>
+<select id="driverSelect"></select>
+
+<h3>同乗者</h3>
+<div id="groupTabs"></div>
+<div id="passengerList" class="chips"></div>
+<input id="passengerOther" placeholder="その他">
+
+<h3>行き先</h3>
+<div id="destList" class="chips"></div>
+<input id="destOther" placeholder="その他">
+
+<h3>用件</h3>
+<div id="purposeList" class="chips"></div>
+<input id="purposeOther" placeholder="その他">
+
+<h3>備考</h3>
+<input id="memo">
+
+<h3>到着メーター</h3>
+<input id="endMeter" readonly>
+
+<div id="gpsCount"></div>
+
+</div>
+
+<div class="fixed-btn">
+<button class="btn-danger" onclick="arrivalEx()">到着</button>
+</div>
+
+<script src="driver.js?v=20260325"></script>
+
+<script>
 let selectedPassengers=new Set();
 let selectedDest=new Set();
 let selectedPurpose=new Set();
@@ -43,12 +96,10 @@ renderPassengers(g);
 groupTabs.appendChild(tab);
 });
 
-// 行き先
 m.destinations.forEach(x=>{
 createChip(x,destList,selectedDest);
 });
 
-// 用件
 m.purposes.forEach(x=>{
 createChip(x,purposeList,selectedPurpose);
 });
@@ -126,6 +177,7 @@ GAS+`?type=arrivalEx`
 document.body.appendChild(script);
 
 }
-
 </script>
-<div id="gpsCount"></div>
+
+</body>
+</html>
