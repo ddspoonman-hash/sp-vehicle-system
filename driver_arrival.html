@@ -183,7 +183,10 @@ function createChip(text, container, setObj){
   container.appendChild(div);
 }
 
+<script>
 function arrivalEx(){
+
+  if(!lockArrivalButton()) return;
 
   const gpsLog = JSON.parse(localStorage.getItem("gpsLog") || "[]");
   const car = String(localStorage.getItem("lastCar") || "").trim();
@@ -199,6 +202,7 @@ function arrivalEx(){
 
     if(!res || !res.ok){
       alert("保存失敗\n" + (res && res.message ? res.message : "レスポンスなし"));
+      unlockArrivalButton();
       return;
     }
 
@@ -224,10 +228,12 @@ function arrivalEx(){
 
   script.onerror = function(){
     alert("到着送信失敗");
+    unlockArrivalButton();
   };
 
   document.body.appendChild(script);
 }
+</script>
 </script>
 
 </body>
