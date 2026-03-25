@@ -70,11 +70,17 @@ async function initStart(){
 
 // ---------------- 出発 ----------------
 async function start(){
+
   const user = JSON.parse(localStorage.getItem("user"));
 
   const selectedCar = String(car.value || "").trim();
   const selectedDriver = String(driverName.value || "").trim();
   const selectedMeter = String(meter.value || "").trim();
+
+  // 👇ここ追加（デバッグ）
+  console.log("出発 car=", selectedCar);
+  console.log("driver=", selectedDriver);
+  console.log("meter=", selectedMeter);
 
   await jsonp(
     GAS+"?type=start"
