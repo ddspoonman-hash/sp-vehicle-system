@@ -137,7 +137,8 @@ container.appendChild(div);
 
 // ---------------- 到着 ----------------
 function arrivalEx(){
-
+console.log("到着 car=", car);
+console.log("gpsLog=", gpsLog);
 const gpsLog=JSON.parse(localStorage.getItem("gpsLog")||"[]");
 const car=localStorage.getItem("lastCar");
 
