@@ -1,7 +1,8 @@
 const GAS="https://script.google.com/macros/s/AKfycbwbMFxKiQlT_hpb_iNjljeEvKZ7LMr9q8i2KpdW6iWrO6d3pv40iun7SLRTFAstn9C5/exec";
 
+console.log("NEW DRIVER VERSION 20260326");
+
 let gpsWatchId = null;
-let gpsSending = false;
 
 // ---------------- JSONP ----------------
 function jsonp(url){
@@ -105,8 +106,6 @@ async function start(){
     alert("出発処理エラー");
     console.error(e);
   }
-
-  alert("出発登録OK：" + selectedCar);
 }
 
 // ---------------- GPS ----------------
@@ -142,13 +141,6 @@ function startGPS(){
 
 function saveGps(pos){
   const accuracy = Number(pos.coords.accuracy || 9999);
-
-  // 精度が悪すぎる点は捨てる
-  if(accuracy > 30){
-    console.log("GPS破棄 accuracy>", accuracy);
-    return;
-  }
-
   let log = JSON.parse(localStorage.getItem("gpsLog") || "[]");
 
   const point = {
@@ -158,21 +150,36 @@ function saveGps(pos){
     ts: Date.now()
   };
 
-  // 直前と近すぎる点は捨てる
-  if(log.length > 0){
-    const last = log[log.length - 1];
-    const d = distanceOnePoint(last.lat, last.lng, point.lat, point.lng);
-
-    // 15m未満はブレ扱い
-    if(d < 15){
-      console.log("GPS破棄 近すぎ", d);
+  // 最初の1件は少し緩めに保存
+  if(log.length === 0){
+    if(accuracy > 200){
+      console.log("GPS初回破棄 accuracy>", accuracy);
       return;
     }
+
+    log.push(point);
+    localStorage.setItem("gpsLog", JSON.stringify(log));
+    updateGpsCount();
+    console.log("GPS初回保存", point);
+    return;
+  }
+
+  // 2件目以降
+  if(accuracy > 100){
+    console.log("GPS破棄 accuracy>", accuracy);
+    return;
+  }
+
+  const last = log[log.length - 1];
+  const d = distanceOnePoint(last.lat, last.lng, point.lat, point.lng);
+
+  if(d < 10){
+    console.log("GPS破棄 近すぎ", d);
+    return;
   }
 
   log.push(point);
 
-  // URL長対策
   if(log.length > 20){
     log = log.slice(-20);
   }
@@ -225,29 +232,6 @@ async function loadEndMeter(){
 
   const m = await jsonp(GAS + "?type=meter&car=" + encodeURIComponent(car));
   document.getElementById("endMeter").value = m;
-}
-
-// ---------------- 到着送信ガード ----------------
-function lockArrivalButton(){
-  if(gpsSending) return false;
-  gpsSending = true;
-
-  const btn = document.querySelector(".btn-danger");
-  if(btn){
-    btn.disabled = true;
-    btn.textContent = "送信中...";
-  }
-  return true;
-}
-
-function unlockArrivalButton(){
-  gpsSending = false;
-
-  const btn = document.querySelector(".btn-danger");
-  if(btn){
-    btn.disabled = false;
-    btn.textContent = "到着";
-  }
 }
 
 // ---------------- logout ----------------
