@@ -75,12 +75,14 @@
 </div>
 
 <div class="fixed-btn">
- <button class="btn-danger">到着</button>
+  <button id="arrivalBtn" class="btn-danger">到着</button>
 </div>
 
-<script src="driver.js?v=20260325"></script>
+<script src="driver.js?v=20260326"></script>
 
 <script>
+console.log("NEW ARRIVAL VERSION 20260326");
+
 let selectedPassengers = new Set();
 let selectedDest = new Set();
 let selectedPurpose = new Set();
@@ -147,9 +149,9 @@ window.addEventListener("load", async () => {
   const log = JSON.parse(localStorage.getItem("gpsLog") || "[]");
   gpsCount.textContent = "GPS件数：" + log.length;
 
-  const btn = document.querySelector(".btn-danger");
+  const btn = document.getElementById("arrivalBtn");
   if(btn){
-    btn.onclick = arrivalEx;
+    btn.addEventListener("click", arrivalEx);
   }
 });
 
@@ -185,11 +187,11 @@ function createChip(text, container, setObj){
 }
 
 function arrivalEx(){
-  console.log("NEW ARRIVAL VERSION");
-  if(arrivalSending || arrivalDone) return false;
+  if(arrivalSending || arrivalDone) return;
+
   arrivalSending = true;
 
-  const btn = document.querySelector(".btn-danger");
+  const btn = document.getElementById("arrivalBtn");
   if(btn){
     btn.disabled = true;
     btn.textContent = "送信中...";
@@ -197,7 +199,9 @@ function arrivalEx(){
 
   const gpsLog = JSON.parse(localStorage.getItem("gpsLog") || "[]");
   const car = String(localStorage.getItem("lastCar") || "").trim();
+  const reqId = "ARR_" + Date.now() + "_" + Math.random().toString(36).slice(2,8);
 
+  console.log("到着 reqId=", reqId);
   console.log("到着 car=", car);
   console.log("gpsLog=", gpsLog);
 
@@ -205,10 +209,12 @@ function arrivalEx(){
   const dest = [...selectedDest, destOther.value].filter(Boolean).join(",");
   const purpose = [...selectedPurpose, purposeOther.value].filter(Boolean).join(",");
 
-  const callbackName = "cb_arrival_" + Date.now() + "_" + Math.random().toString(36).slice(2);
+  const callbackName = "cb_arrival_" + reqId;
 
   window[callbackName] = function(res){
     console.log("arrival response=", res);
+
+    delete window[callbackName];
 
     if(arrivalDone) return;
 
@@ -216,7 +222,6 @@ function arrivalEx(){
       arrivalDone = true;
       stopGPS();
       localStorage.removeItem("gpsLog");
-      delete window[callbackName];
 
       alert("完了\n距離：" + res.distance + "m");
       location.href = "driver_start.html";
@@ -224,7 +229,6 @@ function arrivalEx(){
     }
 
     arrivalSending = false;
-    delete window[callbackName];
 
     if(btn){
       btn.disabled = false;
@@ -237,6 +241,7 @@ function arrivalEx(){
   const script = document.createElement("script");
   script.src =
     GAS + `?type=arrivalEx`
+    + `&reqId=${encodeURIComponent(reqId)}`
     + `&car=${encodeURIComponent(car)}`
     + `&gpsLog=${encodeURIComponent(JSON.stringify(gpsLog))}`
     + `&driver=${encodeURIComponent(driverSelect.value)}`
@@ -248,8 +253,8 @@ function arrivalEx(){
     + `&t=${Date.now()}`;
 
   script.onerror = function(){
-    arrivalSending = false;
     delete window[callbackName];
+    arrivalSending = false;
 
     if(btn){
       btn.disabled = false;
@@ -260,9 +265,7 @@ function arrivalEx(){
   };
 
   document.body.appendChild(script);
-  return false;
 }
-</script>
 </script>
 
 </body>
