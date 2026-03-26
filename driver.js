@@ -165,7 +165,7 @@ function saveGps(pos){
   }
 
   // 2件目以降
-  if(accuracy > 100){
+  if(accuracy > 150){
     console.log("GPS破棄 accuracy>", accuracy);
     return;
   }
@@ -180,8 +180,9 @@ function saveGps(pos){
 
   log.push(point);
 
-  if(log.length > 20){
-    log = log.slice(-20);
+  // GPS保存制限
+  if(log.length > 300){
+    log = log.slice(-300);
   }
 
   localStorage.setItem("gpsLog", JSON.stringify(log));
