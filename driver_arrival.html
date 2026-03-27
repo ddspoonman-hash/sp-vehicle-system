@@ -187,26 +187,36 @@ function createChip(text, container, setObj){
 }
 
 // ---------------- GPSログ圧縮 ----------------
-// 最大80点程度に間引いて送る
+// 保存は多め、送信は軽くする
 function compactGpsLog(log){
   if(!log || log.length === 0) return [];
-  if(log.length <= 80) return log;
 
-  const result = [];
-  const step = Math.ceil(log.length / 80);
+  const maxPoints = 15;
+  let result = [];
 
-  for(let i=0; i<log.length; i += step){
-    result.push(log[i]);
+  if(log.length <= maxPoints){
+    result = log.slice();
+  }else{
+    const step = Math.ceil(log.length / maxPoints);
+
+    for(let i = 0; i < log.length; i += step){
+      result.push(log[i]);
+    }
+
+    const last = log[log.length - 1];
+    if(result.length === 0 || result[result.length - 1] !== last){
+      result.push(last);
+    }
   }
 
-  const last = log[log.length - 1];
-  if(result.length === 0 || result[result.length - 1] !== last){
-    result.push(last);
-  }
-
-  return result;
+  // 送信用に軽量化
+  return result.map(p => ({
+    lat: Number(p.lat),
+    lng: Number(p.lng)
+  }));
 }
 
+// ---------------- 到着 ----------------
 function arrivalEx(){
   if(arrivalSending || arrivalDone) return;
 
@@ -227,7 +237,6 @@ function arrivalEx(){
   console.log("到着 car=", car);
   console.log("rawGpsLog count=", rawGpsLog.length);
   console.log("sendGpsLog count=", gpsLog.length);
-  console.log("sendGpsLog sample=", gpsLog);
 
   const passengers = [...selectedPassengers, passengerOther.value].filter(Boolean).join(",");
   const dest = [...selectedDest, destOther.value].filter(Boolean).join(",");
@@ -288,6 +297,8 @@ function arrivalEx(){
     + `&memo=${encodeURIComponent(memo.value)}`
     + `&callback=${callbackName}`
     + `&t=${Date.now()}`;
+
+  console.log("send url length=", script.src.length);
 
   script.onerror = function(){
     clearTimeout(arrivalTimeout);
