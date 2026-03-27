@@ -186,6 +186,27 @@ function createChip(text, container, setObj){
   container.appendChild(div);
 }
 
+// ---------------- GPSログ圧縮 ----------------
+// 最大80点程度に間引いて送る
+function compactGpsLog(log){
+  if(!log || log.length === 0) return [];
+  if(log.length <= 80) return log;
+
+  const result = [];
+  const step = Math.ceil(log.length / 80);
+
+  for(let i=0; i<log.length; i += step){
+    result.push(log[i]);
+  }
+
+  const last = log[log.length - 1];
+  if(result.length === 0 || result[result.length - 1] !== last){
+    result.push(last);
+  }
+
+  return result;
+}
+
 function arrivalEx(){
   if(arrivalSending || arrivalDone) return;
 
@@ -197,13 +218,16 @@ function arrivalEx(){
     btn.textContent = "送信中...";
   }
 
-  const gpsLog = JSON.parse(localStorage.getItem("gpsLog") || "[]");
+  const rawGpsLog = JSON.parse(localStorage.getItem("gpsLog") || "[]");
+  const gpsLog = compactGpsLog(rawGpsLog);
   const car = String(localStorage.getItem("lastCar") || "").trim();
   const reqId = "ARR_" + Date.now() + "_" + Math.random().toString(36).slice(2,8);
 
   console.log("到着 reqId=", reqId);
   console.log("到着 car=", car);
-  console.log("gpsLog=", gpsLog);
+  console.log("rawGpsLog count=", rawGpsLog.length);
+  console.log("sendGpsLog count=", gpsLog.length);
+  console.log("sendGpsLog sample=", gpsLog);
 
   const passengers = [...selectedPassengers, passengerOther.value].filter(Boolean).join(",");
   const dest = [...selectedDest, destOther.value].filter(Boolean).join(",");
@@ -211,10 +235,23 @@ function arrivalEx(){
 
   const callbackName = "cb_arrival_" + reqId;
 
+  let arrivalTimeout = setTimeout(() => {
+    try{ delete window[callbackName]; }catch(e){}
+    arrivalSending = false;
+
+    if(btn){
+      btn.disabled = false;
+      btn.textContent = "到着";
+    }
+
+    alert("到着送信がタイムアウトしました。通信状況をご確認ください。");
+  }, 20000);
+
   window[callbackName] = function(res){
+    clearTimeout(arrivalTimeout);
     console.log("arrival response=", res);
 
-    delete window[callbackName];
+    try{ delete window[callbackName]; }catch(e){}
 
     if(arrivalDone) return;
 
@@ -253,7 +290,9 @@ function arrivalEx(){
     + `&t=${Date.now()}`;
 
   script.onerror = function(){
-    delete window[callbackName];
+    clearTimeout(arrivalTimeout);
+    try{ delete window[callbackName]; }catch(e){}
+
     arrivalSending = false;
 
     if(btn){
