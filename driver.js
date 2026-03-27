@@ -181,9 +181,9 @@ function saveGps(pos){
   log.push(point);
 
   // GPS保存制限
-  if(log.length > 300){
-    log = log.slice(-300);
-  }
+  if(log.length > 1500){
+  log = log.slice(-1500);
+}
 
   localStorage.setItem("gpsLog", JSON.stringify(log));
   updateGpsCount();
