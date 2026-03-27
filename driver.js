@@ -165,18 +165,26 @@ function saveGps(pos){
   }
 
   // 2件目以降
-  if(accuracy > 150){
-    console.log("GPS破棄 accuracy>", accuracy);
-    return;
-  }
+if(accuracy > 150){
+  console.log("GPS破棄 accuracy>", accuracy);
+  return;
+}
 
-  const last = log[log.length - 1];
-  const d = distanceOnePoint(last.lat, last.lng, point.lat, point.lng);
+const last = log[log.length - 1];
+const d = distanceOnePoint(last.lat, last.lng, point.lat, point.lng);
+const dt = point.ts - (last.ts || 0);
 
-  if(d < 10){
-    console.log("GPS破棄 近すぎ", d);
-    return;
-  }
+// 5秒未満なら捨てる
+if(dt < 5000){
+  console.log("GPS破棄 時間短すぎ", dt);
+  return;
+}
+
+// 15m未満なら捨てる
+if(d < 15){
+  console.log("GPS破棄 近すぎ", d);
+  return;
+}
 
   log.push(point);
 
