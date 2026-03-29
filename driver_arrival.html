@@ -149,6 +149,13 @@ window.addEventListener("load", async () => {
   const log = JSON.parse(localStorage.getItem("gpsLog") || "[]");
   gpsCount.textContent = "GPS件数：" + log.length;
 
+ // ★ここ追加
+  setInterval(()=>{
+    const log = JSON.parse(localStorage.getItem("gpsLog") || "[]");
+    gpsCount.textContent = "GPS件数：" + log.length;
+  }, 5000);
+
+  
   const btn = document.getElementById("arrivalBtn");
   if(btn){
     btn.addEventListener("click", arrivalEx);
