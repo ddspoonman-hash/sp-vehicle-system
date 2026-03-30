@@ -80,6 +80,26 @@ async function initStart(){
   carSelect.dispatchEvent(new Event("change"));
 }
 
+// ---------------- 位置情報確認 ----------------
+function getCurrentPositionPromise(options){
+  return new Promise((resolve,reject)=>{
+    if(!navigator.geolocation){
+      reject(new Error("位置情報未対応端末"));
+      return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      pos=>resolve(pos),
+      err=>reject(err),
+      options || {
+        enableHighAccuracy:true,
+        timeout:10000,
+        maximumAge:3000
+      }
+    );
+  });
+}
+
 // ---------------- 出発 ----------------
 async function start(){
   try{
@@ -92,6 +112,19 @@ async function start(){
     console.log("driver=", selectedDriver);
     console.log("meter=", selectedMeter);
 
+    // ★ 出発前に位置情報確認
+    try{
+      await getCurrentPositionPromise({
+        enableHighAccuracy:true,
+        timeout:10000,
+        maximumAge:3000
+      });
+    }catch(e){
+      alert("位置情報が取得できません。\n位置情報をONにしてから出発してください。");
+      console.error("start gps check error", e);
+      return;
+    }
+
     await jsonp(
       GAS + "?type=start"
       + "&car=" + encodeURIComponent(selectedCar)
@@ -102,6 +135,7 @@ async function start(){
 
     localStorage.setItem("lastCar", selectedCar);
     location.href = "driver_arrival.html";
+
   }catch(e){
     alert("出発処理エラー");
     console.error(e);
@@ -150,7 +184,7 @@ function saveGps(pos){
     ts: Date.now()
   };
 
-  // 最初の1件は少し緩めに保存
+  // 最初の1件
   if(log.length === 0){
     if(accuracy > 200){
       console.log("GPS初回破棄 accuracy>", accuracy);
@@ -165,33 +199,30 @@ function saveGps(pos){
   }
 
   // 2件目以降
-if(accuracy > 150){
-  console.log("GPS破棄 accuracy>", accuracy);
-  return;
-}
+  if(accuracy > 150){
+    console.log("GPS破棄 accuracy>", accuracy);
+    return;
+  }
 
-const last = log[log.length - 1];
-const d = distanceOnePoint(last.lat, last.lng, point.lat, point.lng);
-const dt = point.ts - (last.ts || 0);
+  const last = log[log.length - 1];
+  const d = distanceOnePoint(last.lat, last.lng, point.lat, point.lng);
+  const dt = point.ts - (last.ts || 0);
 
-// 5秒未満なら捨てる
-if(dt < 5000){
-  console.log("GPS破棄 時間短すぎ", dt);
-  return;
-}
+  if(dt < 5000){
+    console.log("GPS破棄 時間短すぎ", dt);
+    return;
+  }
 
-// 15m未満なら捨てる
-if(d < 15){
-  console.log("GPS破棄 近すぎ", d);
-  return;
-}
+  if(d < 15){
+    console.log("GPS破棄 近すぎ", d);
+    return;
+  }
 
   log.push(point);
 
-  // GPS保存制限
   if(log.length > 1500){
-  log = log.slice(-1500);
-}
+    log = log.slice(-1500);
+  }
 
   localStorage.setItem("gpsLog", JSON.stringify(log));
   updateGpsCount();
