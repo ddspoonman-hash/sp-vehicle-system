@@ -6,39 +6,12 @@
 <link rel="stylesheet" href="style.css">
 
 <style>
-.chips{
-  display:flex;
-  flex-wrap:wrap;
-  gap:8px;
-  margin-top:8px;
-}
-.chip{
-  padding:10px 14px;
-  background:#eee;
-  border-radius:20px;
-  font-size:14px;
-}
-.chip.active{
-  background:#007bff;
-  color:#fff;
-}
-.tab{
-  display:inline-block;
-  padding:8px 12px;
-  margin-right:6px;
-  background:#ddd;
-  border-radius:10px;
-  cursor:pointer;
-}
-.tab.active{
-  background:#007bff;
-  color:#fff;
-}
-#gpsCount{
-  margin-top:8px;
-  font-size:14px;
-  color:#666;
-}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px;}
+.chip{padding:10px 14px;background:#eee;border-radius:20px;font-size:14px;}
+.chip.active{background:#007bff;color:#fff;}
+.tab{display:inline-block;padding:8px 12px;margin-right:6px;background:#ddd;border-radius:10px;cursor:pointer;}
+.tab.active{background:#007bff;color:#fff;}
+#gpsCount{margin-top:8px;font-size:14px;color:#666;}
 </style>
 </head>
 
@@ -48,280 +21,241 @@
 
 <div class="card">
 
-  <h3>運転者</h3>
-  <select id="driverSelect"></select>
+<h3>運転者</h3>
+<select id="driverSelect"></select>
 
-  <h3>同乗者</h3>
-  <div id="groupTabs"></div>
-  <div id="passengerList" class="chips"></div>
-  <input id="passengerOther" placeholder="その他">
+<h3>同乗者</h3>
+<div id="groupTabs"></div>
+<div id="passengerList" class="chips"></div>
+<input id="passengerOther" placeholder="その他">
 
-  <h3>行き先</h3>
-  <div id="destList" class="chips"></div>
-  <input id="destOther" placeholder="その他">
+<h3>行き先</h3>
+<div id="destList" class="chips"></div>
+<input id="destOther" placeholder="その他">
 
-  <h3>用件</h3>
-  <div id="purposeList" class="chips"></div>
-  <input id="purposeOther" placeholder="その他">
+<h3>用件</h3>
+<div id="purposeList" class="chips"></div>
+<input id="purposeOther" placeholder="その他">
 
-  <h3>備考</h3>
-  <input id="memo">
+<h3>備考</h3>
+<input id="memo">
 
-  <h3>到着メーター</h3>
-  <input id="endMeter" readonly>
+<h3>到着メーター</h3>
+<input id="endMeter" readonly>
 
-  <div id="gpsCount">GPS件数：0</div>
+<div id="gpsCount">GPS件数：0</div>
 
 </div>
 
 <div class="fixed-btn">
-  <button id="arrivalBtn" class="btn-danger">到着</button>
+<button id="arrivalBtn" class="btn-danger">到着</button>
 </div>
 
 <script src="driver.js?v=20260326"></script>
 
 <script>
-console.log("NEW ARRIVAL VERSION 20260326");
+console.log("NEW ARRIVAL FINAL VERSION");
 
-let selectedPassengers = new Set();
-let selectedDest = new Set();
-let selectedPurpose = new Set();
-let allPassengers = [];
-let arrivalSending = false;
-let arrivalDone = false;
+let selectedPassengers=new Set();
+let selectedDest=new Set();
+let selectedPurpose=new Set();
+let allPassengers=[];
+let arrivalSending=false;
+let arrivalDone=false;
 
-window.addEventListener("load", async () => {
-  const user = JSON.parse(localStorage.getItem("user"));
-  if(!user){
-    location.href = "index.html";
-    return;
-  }
+// ---------------- 初期 ----------------
+window.addEventListener("load",async()=>{
 
-  const d = await jsonp(GAS + "?type=drivers");
-  driverSelect.innerHTML = "";
-  d.forEach(x => {
-    const o = document.createElement("option");
-    o.value = x.name;
-    o.textContent = x.name;
-    if(x.name === user.name) o.selected = true;
-    driverSelect.appendChild(o);
-  });
+const user=JSON.parse(localStorage.getItem("user"));
+if(!user){location.href="index.html";return;}
 
-  const m = await jsonp(GAS + "?type=masters");
-
-  allPassengers = m.passengers || [];
-
-  const groups = [...new Set(allPassengers.map(x => x.group))];
-  groupTabs.innerHTML = "";
-
-  groups.forEach((g, i) => {
-    const tab = document.createElement("span");
-    tab.className = "tab";
-    tab.textContent = g;
-
-    tab.onclick = () => {
-      document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
-      tab.classList.add("active");
-      renderPassengers(g);
-    };
-
-    if(i === 0){
-      tab.classList.add("active");
-    }
-
-    groupTabs.appendChild(tab);
-  });
-
-  if(groups.length > 0){
-    renderPassengers(groups[0]);
-  }
-
-  destList.innerHTML = "";
-  (m.destinations || []).forEach(x => {
-    createChip(x, destList, selectedDest);
-  });
-
-  purposeList.innerHTML = "";
-  (m.purposes || []).forEach(x => {
-    createChip(x, purposeList, selectedPurpose);
-  });
-
-  const log = JSON.parse(localStorage.getItem("gpsLog") || "[]");
-  gpsCount.textContent = "GPS件数：" + log.length;
-
- // ★ここ追加
-  setInterval(()=>{
-    const log = JSON.parse(localStorage.getItem("gpsLog") || "[]");
-    gpsCount.textContent = "GPS件数：" + log.length;
-  }, 5000);
-
-  
-  const btn = document.getElementById("arrivalBtn");
-  if(btn){
-    btn.addEventListener("click", arrivalEx);
-  }
+const d=await jsonp(GAS+"?type=drivers");
+driverSelect.innerHTML="";
+d.forEach(x=>{
+const o=document.createElement("option");
+o.value=x.name;
+o.textContent=x.name;
+if(x.name===user.name) o.selected=true;
+driverSelect.appendChild(o);
 });
 
+const m=await jsonp(GAS+"?type=masters");
+
+allPassengers=m.passengers||[];
+
+const groups=[...new Set(allPassengers.map(x=>x.group))];
+groupTabs.innerHTML="";
+
+groups.forEach((g,i)=>{
+const tab=document.createElement("span");
+tab.className="tab";
+tab.textContent=g;
+
+tab.onclick=()=>{
+document.querySelectorAll(".tab").forEach(t=>t.classList.remove("active"));
+tab.classList.add("active");
+renderPassengers(g);
+};
+
+if(i===0) tab.classList.add("active");
+
+groupTabs.appendChild(tab);
+});
+
+if(groups.length>0) renderPassengers(groups[0]);
+
+(m.destinations||[]).forEach(x=>createChip(x,destList,selectedDest));
+(m.purposes||[]).forEach(x=>createChip(x,purposeList,selectedPurpose));
+
+// GPS件数表示
+updateGpsCount();
+setInterval(updateGpsCount,5000);
+
+// 未送信チェック
+const pending=localStorage.getItem("pendingArrival");
+if(pending){
+const btn=document.getElementById("arrivalBtn");
+btn.textContent="未送信あり";
+}
+
+document.getElementById("arrivalBtn").onclick=arrivalEx;
+});
+
+// ---------------- UI ----------------
 function renderPassengers(group){
-  passengerList.innerHTML = "";
-  allPassengers
-    .filter(x => x.group == group)
-    .forEach(x => {
-      createChip(x.name, passengerList, selectedPassengers);
-    });
+passengerList.innerHTML="";
+allPassengers.filter(x=>x.group==group).forEach(x=>{
+createChip(x.name,passengerList,selectedPassengers);
+});
 }
 
-function createChip(text, container, setObj){
-  const div = document.createElement("div");
-  div.className = "chip";
-  div.textContent = text;
+function createChip(text,container,set){
+const div=document.createElement("div");
+div.className="chip";
+div.textContent=text;
 
-  if(setObj.has(text)){
-    div.classList.add("active");
-  }
+if(set.has(text)) div.classList.add("active");
 
-  div.onclick = () => {
-    if(setObj.has(text)){
-      setObj.delete(text);
-      div.classList.remove("active");
-    }else{
-      setObj.add(text);
-      div.classList.add("active");
-    }
-  };
+div.onclick=()=>{
+if(set.has(text)){
+set.delete(text);
+div.classList.remove("active");
+}else{
+set.add(text);
+div.classList.add("active");
+}
+};
 
-  container.appendChild(div);
+container.appendChild(div);
 }
 
-// ---------------- GPSログ圧縮 ----------------
-// 保存は多め、送信は軽くする
+// ---------------- GPS圧縮 ----------------
 function compactGpsLog(log){
-  if(!log || log.length === 0) return [];
+if(!log||log.length===0) return [];
 
-  const maxPoints = 50;
-  let result = [];
+const maxPoints=50;
+let result=[];
 
-  if(log.length <= maxPoints){
-    result = log.slice();
-  }else{
-    const step = Math.ceil(log.length / maxPoints);
+if(log.length<=maxPoints){
+result=log.slice();
+}else{
+const step=Math.ceil(log.length/maxPoints);
+for(let i=0;i<log.length;i+=step){
+result.push(log[i]);
+}
+const last=log[log.length-1];
+if(result[result.length-1]!==last) result.push(last);
+}
 
-    for(let i = 0; i < log.length; i += step){
-      result.push(log[i]);
-    }
-
-    const last = log[log.length - 1];
-    if(result.length === 0 || result[result.length - 1] !== last){
-      result.push(last);
-    }
-  }
-
-  // 送信用に軽量化
-  return result.map(p => ({
-    lat: Number(p.lat),
-    lng: Number(p.lng)
-  }));
+return result.map(p=>({lat:Number(p.lat),lng:Number(p.lng)}));
 }
 
 // ---------------- 到着 ----------------
 function arrivalEx(){
-  if(arrivalSending || arrivalDone) return;
 
-  arrivalSending = true;
+if(arrivalSending||arrivalDone) return;
 
-  const btn = document.getElementById("arrivalBtn");
-  if(btn){
-    btn.disabled = true;
-    btn.textContent = "送信中...";
-  }
+arrivalSending=true;
 
-  const rawGpsLog = JSON.parse(localStorage.getItem("gpsLog") || "[]");
-  const gpsLog = compactGpsLog(rawGpsLog);
-  const car = String(localStorage.getItem("lastCar") || "").trim();
-  const reqId = "ARR_" + Date.now() + "_" + Math.random().toString(36).slice(2,8);
+const btn=document.getElementById("arrivalBtn");
+btn.disabled=true;
+btn.textContent="送信中...";
 
-  console.log("到着 reqId=", reqId);
-  console.log("到着 car=", car);
-  console.log("rawGpsLog count=", rawGpsLog.length);
-  console.log("sendGpsLog count=", gpsLog.length);
+const rawGpsLog=JSON.parse(localStorage.getItem("gpsLog")||"[]");
+const gpsLog=compactGpsLog(rawGpsLog);
+const car=String(localStorage.getItem("lastCar")||"").trim();
+const reqId="ARR_"+Date.now()+"_"+Math.random().toString(36).slice(2,8);
 
-  const passengers = [...selectedPassengers, passengerOther.value].filter(Boolean).join(",");
-  const dest = [...selectedDest, destOther.value].filter(Boolean).join(",");
-  const purpose = [...selectedPurpose, purposeOther.value].filter(Boolean).join(",");
+const passengers=[...selectedPassengers,passengerOther.value].filter(Boolean).join(",");
+const dest=[...selectedDest,destOther.value].filter(Boolean).join(",");
+const purpose=[...selectedPurpose,purposeOther.value].filter(Boolean).join(",");
 
-  const callbackName = "cb_arrival_" + reqId;
+// ★保存（最重要）
+localStorage.setItem("pendingArrival",JSON.stringify({
+reqId,car,gpsLog,
+driver:driverSelect.value,
+passengers,destinations:dest,purposes:purpose,
+memo:memo.value
+}));
 
-  let arrivalTimeout = setTimeout(() => {
-    try{ delete window[callbackName]; }catch(e){}
-    arrivalSending = false;
+const callbackName="cb_arrival_"+reqId;
 
-    if(btn){
-      btn.disabled = false;
-      btn.textContent = "到着";
-    }
+let timeout=setTimeout(()=>{
+arrivalSending=false;
+btn.disabled=false;
+btn.textContent="再送信";
+alert("通信タイムアウト");
+},20000);
 
-    alert("到着送信がタイムアウトしました。通信状況をご確認ください。");
-  }, 20000);
+window[callbackName]=function(res){
+clearTimeout(timeout);
 
-  window[callbackName] = function(res){
-    clearTimeout(arrivalTimeout);
-    console.log("arrival response=", res);
+if(res&&res.ok){
+arrivalDone=true;
+stopGPS();
+localStorage.removeItem("gpsLog");
+localStorage.removeItem("pendingArrival");
 
-    try{ delete window[callbackName]; }catch(e){}
+alert("完了\n距離："+res.distance+"m");
+location.href="driver_start.html";
+return;
+}
 
-    if(arrivalDone) return;
+arrivalSending=false;
+btn.disabled=false;
+btn.textContent="再送信";
+alert("保存失敗");
+};
 
-    if(res && res.ok){
-      arrivalDone = true;
-      stopGPS();
-      localStorage.removeItem("gpsLog");
+const script=document.createElement("script");
+script.src=
+GAS+`?type=arrivalEx`
++`&reqId=${encodeURIComponent(reqId)}`
++`&car=${encodeURIComponent(car)}`
++`&gpsLog=${encodeURIComponent(JSON.stringify(gpsLog))}`
++`&driver=${encodeURIComponent(driverSelect.value)}`
++`&passengers=${encodeURIComponent(passengers)}`
++`&destinations=${encodeURIComponent(dest)}`
++`&purposes=${encodeURIComponent(purpose)}`
++`&memo=${encodeURIComponent(memo.value)}`
++`&callback=${callbackName}`
++`&t=${Date.now()}`;
 
-      alert("完了\n距離：" + res.distance + "m");
-      location.href = "driver_start.html";
-      return;
-    }
+script.onerror=function(){
+clearTimeout(timeout);
+arrivalSending=false;
+btn.disabled=false;
+btn.textContent="再送信";
+alert("送信失敗");
+};
 
-    arrivalSending = false;
+document.body.appendChild(script);
+}
 
-    if(btn){
-      btn.disabled = false;
-      btn.textContent = "到着";
-    }
-
-    alert("保存失敗\n" + (res && res.message ? res.message : "レスポンスなし"));
-  };
-
-  const script = document.createElement("script");
-  script.src =
-    GAS + `?type=arrivalEx`
-    + `&reqId=${encodeURIComponent(reqId)}`
-    + `&car=${encodeURIComponent(car)}`
-    + `&gpsLog=${encodeURIComponent(JSON.stringify(gpsLog))}`
-    + `&driver=${encodeURIComponent(driverSelect.value)}`
-    + `&passengers=${encodeURIComponent(passengers)}`
-    + `&destinations=${encodeURIComponent(dest)}`
-    + `&purposes=${encodeURIComponent(purpose)}`
-    + `&memo=${encodeURIComponent(memo.value)}`
-    + `&callback=${callbackName}`
-    + `&t=${Date.now()}`;
-
-  console.log("send url length=", script.src.length);
-
-  script.onerror = function(){
-    clearTimeout(arrivalTimeout);
-    try{ delete window[callbackName]; }catch(e){}
-
-    arrivalSending = false;
-
-    if(btn){
-      btn.disabled = false;
-      btn.textContent = "到着";
-    }
-
-    alert("到着送信失敗");
-  };
-
-  document.body.appendChild(script);
+// ---------------- GPS件数 ----------------
+function updateGpsCount(){
+const log=JSON.parse(localStorage.getItem("gpsLog")||"[]");
+gpsCount.textContent="GPS件数："+log.length;
 }
 </script>
 
