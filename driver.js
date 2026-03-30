@@ -1,6 +1,6 @@
 const GAS="https://script.google.com/macros/s/AKfycbwbMFxKiQlT_hpb_iNjljeEvKZ7LMr9q8i2KpdW6iWrO6d3pv40iun7SLRTFAstn9C5/exec";
 
-console.log("NEW DRIVER VERSION 20260326");
+console.log("NEW DRIVER VERSION 20260327");
 
 let gpsWatchId = null;
 
@@ -100,6 +100,39 @@ function getCurrentPositionPromise(options){
   });
 }
 
+function wait(ms){
+  return new Promise(resolve=>setTimeout(resolve, ms));
+}
+
+// 1回失敗しても少し待って再試行
+async function ensureGpsReady(){
+  const options = {
+    enableHighAccuracy:true,
+    timeout:10000,
+    maximumAge:3000
+  };
+
+  try{
+    return await getCurrentPositionPromise(options);
+  }catch(firstErr){
+    console.log("GPS確認1回目失敗", firstErr);
+
+    // 設定変更直後の反映待ち
+    await wait(1500);
+
+    try{
+      return await getCurrentPositionPromise({
+        enableHighAccuracy:true,
+        timeout:12000,
+        maximumAge:0
+      });
+    }catch(secondErr){
+      console.log("GPS確認2回目失敗", secondErr);
+      throw secondErr;
+    }
+  }
+}
+
 // ---------------- 出発 ----------------
 async function start(){
   try{
@@ -112,15 +145,11 @@ async function start(){
     console.log("driver=", selectedDriver);
     console.log("meter=", selectedMeter);
 
-    // ★ 出発前に位置情報確認
+    // ★ 出発前に位置情報確認（再試行あり）
     try{
-      await getCurrentPositionPromise({
-        enableHighAccuracy:true,
-        timeout:10000,
-        maximumAge:3000
-      });
+      await ensureGpsReady();
     }catch(e){
-      alert("位置情報が取得できません。\n位置情報をONにしてから出発してください。");
+      alert("位置情報が取得できません。\n位置情報をONにして、アプリ画面に戻って数秒待ってからもう一度お試しください。");
       console.error("start gps check error", e);
       return;
     }
@@ -184,7 +213,6 @@ function saveGps(pos){
     ts: Date.now()
   };
 
-  // 最初の1件
   if(log.length === 0){
     if(accuracy > 200){
       console.log("GPS初回破棄 accuracy>", accuracy);
@@ -198,7 +226,6 @@ function saveGps(pos){
     return;
   }
 
-  // 2件目以降
   if(accuracy > 150){
     console.log("GPS破棄 accuracy>", accuracy);
     return;
