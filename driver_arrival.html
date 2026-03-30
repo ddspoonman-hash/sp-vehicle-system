@@ -12,6 +12,14 @@
 .tab{display:inline-block;padding:8px 12px;margin-right:6px;background:#ddd;border-radius:10px;cursor:pointer;}
 .tab.active{background:#007bff;color:#fff;}
 #gpsCount{margin-top:8px;font-size:14px;color:#666;}
+.warn{
+  margin-top:10px;
+  padding:10px;
+  border-radius:10px;
+  background:#fff3cd;
+  color:#856404;
+  font-size:14px;
+}
 </style>
 </head>
 
@@ -44,6 +52,7 @@
 <input id="endMeter" readonly>
 
 <div id="gpsCount">GPS件数：0</div>
+<div id="gpsWarn" class="warn" style="display:none;"></div>
 
 </div>
 
@@ -54,7 +63,7 @@
 <script src="driver.js?v=20260326"></script>
 
 <script>
-console.log("NEW ARRIVAL FINAL VERSION WITH ARRIVAL GPS");
+console.log("NEW ARRIVAL WARNING VERSION");
 
 let selectedPassengers=new Set();
 let selectedDest=new Set();
@@ -113,7 +122,11 @@ window.addEventListener("load",async()=>{
   (m.purposes||[]).forEach(x=>createChip(x,purposeList,selectedPurpose));
 
   updateGpsCount();
-  setInterval(updateGpsCount,5000);
+  updateGpsWarning();
+  setInterval(()=>{
+    updateGpsCount();
+    updateGpsWarning();
+  },5000);
 
   const pending=localStorage.getItem("pendingArrival");
   if(pending){
@@ -154,13 +167,35 @@ function createChip(text,container,set){
   container.appendChild(div);
 }
 
-// ---------------- GPS件数 ----------------
+// ---------------- GPS表示 ----------------
 function updateGpsCount(){
   const log=JSON.parse(localStorage.getItem("gpsLog")||"[]");
   gpsCount.textContent="GPS件数："+log.length;
 }
 
-// ---------------- 到着時補完用 現在地取得 ----------------
+function updateGpsWarning(){
+  const log=JSON.parse(localStorage.getItem("gpsLog")||"[]");
+  const warn=document.getElementById("gpsWarn");
+
+  if(!warn) return;
+
+  if(log.length === 0){
+    warn.style.display="block";
+    warn.textContent="位置情報が取得できていません。位置情報設定をご確認ください。";
+    return;
+  }
+
+  if(log.length < 3){
+    warn.style.display="block";
+    warn.textContent="GPS件数が少ないです。画面ON・位置情報ONでしばらく待ってから到着してください。";
+    return;
+  }
+
+  warn.style.display="none";
+  warn.textContent="";
+}
+
+// ---------------- 到着時補完用 ----------------
 function getArrivalPosition(){
   return new Promise((resolve,reject)=>{
     if(!navigator.geolocation){
@@ -203,7 +238,6 @@ function appendArrivalPoint(rawLog, point){
     Number(point.lat), Number(point.lng)
   );
 
-  // 同じような点なら追加しない
   if(d < 5){
     return log;
   }
@@ -241,6 +275,15 @@ async function arrivalEx(){
 
   if(arrivalSending||arrivalDone) return;
 
+  const currentLog=JSON.parse(localStorage.getItem("gpsLog")||"[]");
+  if(currentLog.length===0){
+    const ok=confirm("GPSが1件も取得できていません。このまま到着しますか？");
+    if(!ok) return;
+  }else if(currentLog.length<3){
+    const ok=confirm("GPS件数が少ないです。このまま到着すると距離が短く出る可能性があります。続けますか？");
+    if(!ok) return;
+  }
+
   arrivalSending=true;
 
   const btn=document.getElementById("arrivalBtn");
@@ -249,7 +292,6 @@ async function arrivalEx(){
 
   let rawGpsLog=JSON.parse(localStorage.getItem("gpsLog")||"[]");
 
-  // ★ 到着時補完
   try{
     const arrivalPoint = await getArrivalPosition();
     rawGpsLog = appendArrivalPoint(rawGpsLog, arrivalPoint);
@@ -272,7 +314,6 @@ async function arrivalEx(){
   console.log("rawGpsLog count=", rawGpsLog.length);
   console.log("sendGpsLog count=", gpsLog.length);
 
-  // ★ 未送信データ保存
   localStorage.setItem("pendingArrival",JSON.stringify({
     reqId,
     car,
