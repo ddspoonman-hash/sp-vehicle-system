@@ -1,12 +1,15 @@
 const GAS = "https://script.google.com/macros/s/AKfycbwbMFxKiQlT_hpb_iNjljeEvKZ7LMr9q8i2KpdW6iWrO6d3pv40iun7SLRTFAstn9C5/exec";
 
-// すでにログイン情報があれば自動遷移
+// すでにログイン済みなら自動復帰
 (function autoLogin(){
   try{
-    const user = JSON.parse(localStorage.getItem("user") || "null");
-    if(!user) return;
+    const raw = localStorage.getItem("user");
+    if(!raw) return;
 
-    if(String(user.id || "").trim().toLowerCase() === "admin"){
+    const user = JSON.parse(raw);
+    if(!user || !user.id) return;
+
+    if(String(user.id).trim().toLowerCase() === "admin"){
       location.replace("admin.html");
     }else{
       location.replace("driver_start.html");
