@@ -1,34 +1,47 @@
-const GAS="https://script.google.com/macros/s/AKfycbxkgNmKdoeilTzXtelG_1VZNu8MHP0wxxkPNLaS-OY4Ix2V08bxJx7CyYMlozKyirLN/exec";
+const GAS = "https://script.google.com/macros/s/AKfycbwbMFxKiQlT_hpb_iNjljeEvKZ7LMr9q8i2KpdW6iWrO6d3pv40iun7SLRTFAstn9C5/exec";
 
 function jsonp(url){
-return new Promise(res=>{
-const cb="cb_"+Date.now();
-window[cb]=data=>{
-res(data);
-delete window[cb];
-};
-const s=document.createElement("script");
-s.src=url+"&callback="+cb+"&t="+Date.now();
-document.body.appendChild(s);
-});
+  return new Promise((resolve, reject) => {
+    const cb = "cb_" + Math.random().toString(36).substring(2);
+    const s = document.createElement("script");
+
+    window[cb] = data => {
+      resolve(data);
+      try{ delete window[cb]; }catch(e){}
+      s.remove();
+    };
+
+    s.src = url + "&callback=" + cb + "&t=" + Date.now();
+
+    s.onerror = function(){
+      try{ delete window[cb]; }catch(e){}
+      s.remove();
+      reject(new Error("JSONP error"));
+    };
+
+    document.body.appendChild(s);
+  });
 }
 
 async function load(){
-let d=await jsonp(GAS+"?type=board");
-list.innerText=d.map(x=>x.msg).join("\n");
+  const list = document.getElementById("list");
+  const d = await jsonp(GAS + "?type=board");
+  list.innerText = (d || []).map(x => x.msg).join("\n");
 }
 
-async function post(){
-await jsonp(GAS+`?type=board&msg=${encodeURIComponent(msg.value)}`);
-msg.value="";
-load();
+async function postMessage(){
+  const msg = document.getElementById("msg");
+  const text = String(msg.value || "").trim();
+  if(!text) return;
+
+  await jsonp(GAS + "?type=board&msg=" + encodeURIComponent(text));
+  msg.value = "";
+  load();
 }
 
 function logout(){
-localStorage.clear();
-location.href="index.html";
+  localStorage.clear();
+  location.href = "index.html";
 }
-
-
 
 load();
