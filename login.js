@@ -1,6 +1,5 @@
 const GAS = "https://script.google.com/macros/s/AKfycbwbMFxKiQlT_hpb_iNjljeEvKZ7LMr9q8i2KpdW6iWrO6d3pv40iun7SLRTFAstn9C5/exec";
 
-// すでにログイン済みなら自動復帰
 (function autoLogin(){
   try{
     const raw = localStorage.getItem("user");
