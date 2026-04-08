@@ -27,11 +27,31 @@ function jsonp(url){
   });
 }
 
+function setBusyButton(btn, text){
+  if(!btn) return;
+  btn.disabled = true;
+  btn.textContent = text;
+  btn.classList.add("busy");
+}
+
+function releaseBusyButton(btn, text){
+  if(!btn) return;
+  btn.disabled = false;
+  btn.textContent = text;
+  btn.classList.remove("busy");
+}
+
 function setStartButtonState(enabled, text){
   const btn = document.getElementById("startBtn");
   if(!btn) return;
   btn.disabled = !enabled;
-  if(text) btn.textContent = text;
+  btn.textContent = text || btn.textContent;
+
+  if(enabled){
+    btn.classList.remove("busy");
+  }else{
+    btn.classList.add("busy");
+  }
 }
 
 function setMeterLoadingState(loading){
@@ -72,8 +92,27 @@ window.onload = async () => {
 
   if(document.getElementById("car")){
     await initStart();
+
+    // 起動時にサーバー側の進行中運行を確認
+    try{
+      const currentRun = await fetchCurrentRun(user.name);
+      if(currentRun && currentRun.exists){
+        localStorage.setItem("lastCar", String(currentRun.car || ""));
+        localStorage.setItem("startMeter", String(currentRun.startMeter || ""));
+        location.replace("driver_arrival.html");
+        return;
+      }
+    }catch(e){
+      console.error("currentRun check error", e);
+    }
   }
 };
+
+async function fetchCurrentRun(driverName){
+  return await jsonp(
+    GAS + "?type=currentRun&driver=" + encodeURIComponent(String(driverName || "").trim())
+  );
+}
 
 async function getInitData(force = false){
   if(initCache && !force) return initCache;
@@ -149,37 +188,54 @@ async function start(){
   }
 
   const meterValue = String(document.getElementById("meter")?.value || "").trim();
-
   if(!meterValue || meterValue === "読込中..." || meterValue === "取得失敗"){
     alert("メーター取得完了後に出発してください。");
     return;
   }
 
+  const btn = document.getElementById("startBtn");
+
   try{
     startProcessing = true;
-    setStartButtonState(false, "出発処理中...");
+    setBusyButton(btn, "出発処理中...");
 
     const user = JSON.parse(localStorage.getItem("user"));
     const selectedCar = String(document.getElementById("car").value || "").trim();
     const selectedDriver = String(document.getElementById("driverName").value || "").trim();
     const selectedMeter = meterValue;
+    const reqId = "START_" + Date.now() + "_" + Math.random().toString(36).slice(2, 8);
 
-    await jsonp(
+    // 念のため事前確認
+    const currentRun = await fetchCurrentRun(selectedDriver);
+    if(currentRun && currentRun.exists){
+      localStorage.setItem("lastCar", String(currentRun.car || ""));
+      localStorage.setItem("startMeter", String(currentRun.startMeter || ""));
+      alert("すでに進行中の運行があります。到着画面へ移動します。");
+      location.href = "driver_arrival.html";
+      return;
+    }
+
+    const res = await jsonp(
       GAS + "?type=start" +
+      "&reqId=" + encodeURIComponent(reqId) +
       "&car=" + encodeURIComponent(selectedCar) +
       "&driver=" + encodeURIComponent(selectedDriver) +
       "&dept=" + encodeURIComponent(user.dept || "") +
       "&startMeter=" + encodeURIComponent(selectedMeter)
     );
 
+    if(!res || !res.ok){
+      throw new Error(res && res.message ? res.message : "start failed");
+    }
+
     localStorage.setItem("lastCar", selectedCar);
     localStorage.setItem("startMeter", selectedMeter);
     location.href = "driver_arrival.html";
   }catch(e){
-    alert("出発処理エラー");
     console.error(e);
+    alert("出発処理エラー\n" + (e && e.message ? e.message : ""));
     startProcessing = false;
-    setStartButtonState(true, "出発");
+    releaseBusyButton(btn, "出発");
   }
 }
 
