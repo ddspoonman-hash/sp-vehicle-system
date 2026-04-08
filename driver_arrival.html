@@ -45,6 +45,14 @@
       color:#856404;
       font-size:14px;
     }
+    .info{
+      margin-top:10px;
+      padding:10px;
+      border-radius:10px;
+      background:#e8f4ff;
+      color:#0b5cab;
+      font-size:14px;
+    }
     .bottom-space{
       height:90px;
     }
@@ -80,6 +88,7 @@
     <input id="endMeter" type="number" inputmode="decimal" placeholder="到着時のメーターを入力">
 
     <div id="meterWarn" class="warn" style="display:none;"></div>
+    <div id="runInfo" class="info" style="display:none;"></div>
   </div>
 
   <div class="bottom-space"></div>
@@ -88,7 +97,7 @@
     <button id="arrivalBtn" class="btn-danger">到着</button>
   </div>
 
-  <script src="driver.js?v=20260403-1"></script>
+  <script src="driver.js?v=20260407-prod-1"></script>
   <script>
     let selectedPassengers = new Set();
     let selectedDest = new Set();
@@ -96,6 +105,7 @@
     let allPassengers = [];
     let arrivalSending = false;
     let arrivalDone = false;
+    let currentRunData = null;
 
     window.addEventListener("load", async () => {
       const user = JSON.parse(localStorage.getItem("user"));
@@ -105,18 +115,28 @@
       }
 
       try{
-        const [drivers, masters] = await Promise.all([
+        const [drivers, masters, currentRun] = await Promise.all([
           jsonp(GAS + "?type=drivers"),
-          jsonp(GAS + "?type=masters")
+          jsonp(GAS + "?type=masters"),
+          fetchCurrentRun(user.name)
         ]);
+
+        if(!currentRun || !currentRun.exists){
+          alert("進行中の運行が見つかりません。");
+          location.href = "driver_start.html";
+          return;
+        }
+
+        currentRunData = currentRun;
+
+        localStorage.setItem("lastCar", String(currentRun.car || ""));
+        localStorage.setItem("startMeter", String(currentRun.startMeter || ""));
 
         initDriverSelect(drivers, user);
         initPassengerArea(masters);
         initDestinations(masters);
         initPurposes(masters);
-
-        const startMeter = String(localStorage.getItem("startMeter") || "");
-        document.getElementById("startMeterView").value = startMeter;
+        applyRunInfo(currentRun);
 
         document.getElementById("endMeter").addEventListener("input", updateMeterWarning);
         updateMeterWarning();
@@ -132,6 +152,12 @@
         alert("到着画面の初期化に失敗しました");
       }
     });
+
+    async function fetchCurrentRun(driverName){
+      return await jsonp(
+        GAS + "?type=currentRun&driver=" + encodeURIComponent(String(driverName || "").trim())
+      );
+    }
 
     function initDriverSelect(drivers, user){
       const driverSelect = document.getElementById("driverSelect");
@@ -185,6 +211,13 @@
       (masters.purposes || []).forEach(x => createChip(x, purposeList, selectedPurpose));
     }
 
+    function applyRunInfo(run){
+      document.getElementById("startMeterView").value = String(run.startMeter || "");
+      const runInfo = document.getElementById("runInfo");
+      runInfo.style.display = "block";
+      runInfo.textContent = "運行中車両：" + (run.car || "") + " / 出発時刻：" + (run.startTimeText || "");
+    }
+
     function renderPassengers(group){
       const passengerList = document.getElementById("passengerList");
       passengerList.innerHTML = "";
@@ -220,7 +253,7 @@
 
     function updateMeterWarning(){
       const warn = document.getElementById("meterWarn");
-      const startMeter = Number(localStorage.getItem("startMeter") || 0);
+      const startMeter = Number((currentRunData && currentRunData.startMeter) || localStorage.getItem("startMeter") || 0);
       const endMeter = Number(document.getElementById("endMeter").value || 0);
 
       if(!endMeter){
@@ -251,9 +284,14 @@
       if(arrivalSending || arrivalDone) return;
 
       const btn = document.getElementById("arrivalBtn");
-      const car = String(localStorage.getItem("lastCar") || "").trim();
-      const startMeter = Number(localStorage.getItem("startMeter") || 0);
+      const startMeter = Number((currentRunData && currentRunData.startMeter) || localStorage.getItem("startMeter") || 0);
+      const car = String((currentRunData && currentRunData.car) || localStorage.getItem("lastCar") || "").trim();
       const endMeter = Number(document.getElementById("endMeter").value || 0);
+
+      if(!car){
+        alert("進行中の車両情報が取得できません。");
+        return;
+      }
 
       if(!endMeter){
         alert("到着メーターを入力してください");
@@ -276,8 +314,7 @@
       }
 
       arrivalSending = true;
-      btn.disabled = true;
-      btn.textContent = "送信中...";
+      setBusyButton(btn, "送信中...");
 
       const reqId = "ARR_" + Date.now() + "_" + Math.random().toString(36).slice(2, 8);
 
@@ -315,8 +352,7 @@
       const timeout = setTimeout(() => {
         try{ delete window[callbackName]; }catch(e){}
         arrivalSending = false;
-        btn.disabled = false;
-        btn.textContent = "再送信";
+        releaseBusyButton(btn, "再送信");
         alert("通信タイムアウト");
       }, 20000);
 
@@ -335,8 +371,7 @@
         }
 
         arrivalSending = false;
-        btn.disabled = false;
-        btn.textContent = "再送信";
+        releaseBusyButton(btn, "再送信");
         alert("保存失敗\n" + (res && res.message ? res.message : "レスポンスなし"));
       };
 
@@ -358,8 +393,7 @@
         clearTimeout(timeout);
         try{ delete window[callbackName]; }catch(e){}
         arrivalSending = false;
-        btn.disabled = false;
-        btn.textContent = "再送信";
+        releaseBusyButton(btn, "再送信");
         alert("送信失敗");
       };
 
